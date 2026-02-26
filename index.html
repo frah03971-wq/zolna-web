@@ -30,7 +30,7 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-4 space-x-reverse">
-                    <button id="loginBtn" class="bg-white text-emerald-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition">
+                    <button id="loginBtn" onclick="showLogin()" class="bg-white text-emerald-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition">
                         تسجيل الدخول
                     </button>
                     <button onclick="showAddProduct()" class="bg-amber-500 hover:bg-amber-600 px-6 py-2 rounded-full font-bold transition">
@@ -67,6 +67,7 @@
 
     <!-- Products Section -->
     <section class="py-12 container mx-auto px-4">
+        <h3 class="py-12 container mx-auto px-4">
         <h3 class="text-3xl font-bold mb-8 text-center">إعلانات حديثة</h3>
         <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Products will be loaded here -->
@@ -77,7 +78,7 @@
     <div id="addProductModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
             <h3 class="text-2xl font-bold mb-6">إضافة إعلان جديد</h3>
-            <form id="addProductForm">
+            <form id="addProductForm" onsubmit="submitProduct(event)">
                 <div class="mb-4">
                     <label class="block text-gray-700 mb-2">عنوان المنتج</label>
                     <input type="text" id="productTitle" required class="w-full px-4 py-2 border rounded-lg outline-none focus:border-emerald-500">
@@ -123,55 +124,205 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+
     <script>
-        // Calculate 2% commission
-        function calculateFee() {
-            const price = parseFloat(document.getElementById('productPrice').value) || 0;
-            const commission = price * 0.02;
-            const sellerGets = price - commission;
-            
-            document.getElementById('commissionAmount').textContent = commission.toLocaleString();
-            document.getElementById('sellerAmount').textContent = sellerGets.toLocaleString();
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx9a7vzp5x0PM6_BurDdfXXhjvJwgbx_U",
+            authDomain: "zolna-sd.firebaseapp.com",
+            projectId: "zolna-sd",
+            storageBucket: "zolna-sd.firebasestorage.app",
+            messagingSenderId: "1079282652053",
+            appId: "1:1079282652053:web:fd8cb84c19aff096b45c9c",
+            measurementId: "G-V2KJ0CVRBX"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+
+        // Commission Rate: 2%
+        const COMMISSION_RATE = 0.02;
+
+        // Calculate commission
+        function calculateZolnaCommission(price) {
+            const commission = Math.round(price * COMMISSION_RATE);
+            return {
+                originalPrice: price,
+                commission: commission,
+                sellerGets: price - commission,
+                zolnaGets: commission
+            };
         }
 
-        // Show/Hide Modals
-        function showAddProduct() {
-            document.getElementById('addProductModal').classList.remove('hidden');
+        // UI Functions
+        function showLogin() {
+            document.getElementById('loginModal').classList.remove('hidden');
         }
-        function closeAddProduct() {
-            document.getElementById('addProductModal').classList.add('hidden');
-        }
+
         function closeLogin() {
             document.getElementById('loginModal').classList.add('hidden');
         }
 
-        // Sample Products
-        const sampleProducts = [
-            { id: 1, title: "تويوتا كورولا 2019", price: 12500000, image: "https://images.unsplash.com/photo-1503376780353-7e6692767b70?w=400", location: "الخرطوم" },
-            { id: 2, title: "آيفون 12 برو ماكس", price: 280000, image: "https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=400", location: "أم درمان" },
-            { id: 3, title: "طقم جلوس مودرن", price: 320000, image: "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400", location: "بحري" },
-            { id: 4, title: "ساعة ذكية جديدة", price: 45000, image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400", location: "مدني" }
-        ];
+        function showAddProduct() {
+            document.getElementById('addProductModal').classList.remove('hidden');
+        }
 
-        // Load Products
+        function closeAddProduct() {
+            document.getElementById('addProductModal').classList.add('hidden');
+        }
+
+        function calculateFee() {
+            const price = parseFloat(document.getElementById('productPrice').value) || 0;
+            const result = calculateZolnaCommission(price);
+            
+            document.getElementById('commissionAmount').textContent = result.commission.toLocaleString();
+            document.getElementById('sellerAmount').textContent = result.sellerGets.toLocaleString();
+        }
+
+        // Auth Functions
+        function loginWithPhone() {
+            alert("سيتم ربط Firebase Auth قريباً");
+        }
+
+        function loginWithGoogle() {
+            const provider = new firebase.auth.GoogleAuthProvider();
+            auth.signInWithPopup(provider)
+                .then((result) => {
+                    alert("تم تسجيل الدخول: " + result.user.displayName);
+                    closeLogin();
+                })
+                .catch((error) => {
+                    alert("خطأ: " + error.message);
+                });
+        }
+
+        function loginWithEmail() {
+            const email = prompt("البريد الإلكتروني:");
+            const password = prompt("كلمة المرور:");
+            if (email && password) {
+                auth.signInWithEmailAndPassword(email, password)
+                    .then(() => {
+                        alert("تم تسجيل الدخول");
+                        closeLogin();
+                    })
+                    .catch((error) => alert("خطأ: " + error.message));
+            }
+        }
+
+        // Product Functions
+        function submitProduct(e) {
+            e.preventDefault();
+            
+            const productData = {
+                title: document.getElementById('productTitle').value,
+                price: parseFloat(document.getElementById('productPrice').value),
+                description: document.getElementById('productDesc').value,
+                phone: document.getElementById('sellerPhone').value,
+                createdAt: new Date(),
+                status: 'active'
+            };
+
+            // Save to Firebase (or local for now)
+            db.collection('products').add(productData)
+                .then(() => {
+                    alert("تم نشر الإعلان بنجاح!");
+                    closeAddProduct();
+                    loadProducts();
+                })
+                .catch((error) => {
+                    console.error("Error:", error);
+                    // Fallback: save locally
+                    saveProductLocal(productData);
+                });
+        }
+
+        function saveProductLocal(product) {
+            let products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
+            products.push({...product, id: Date.now()});
+            localStorage.setItem('zolna_products', JSON.stringify(products));
+            alert("تم الحفظ محلياً (Firebase غير متصل)");
+            closeAddProduct();
+            loadProducts();
+        }
+
         function loadProducts() {
             const grid = document.getElementById('productsGrid');
-            grid.innerHTML = sampleProducts.map(product => `
+            
+            // Try Firebase first
+            db.collection('products').get()
+                .then((snapshot) => {
+                    if (!snapshot.empty) {
+                        grid.innerHTML = '';
+                        snapshot.forEach((doc) => {
+                            const p = doc.data();
+                            grid.innerHTML += createProductCard(p);
+                        });
+                    } else {
+                        // Load from local
+                        loadLocalProducts();
+                    }
+                })
+                .catch(() => {
+                    loadLocalProducts();
+                });
+        }
+
+        function loadLocalProducts() {
+            const grid = document.getElementById('productsGrid');
+            const products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
+            
+            if (products.length === 0) {
+                // Sample products
+                grid.innerHTML = `
+                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
+                        <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                            <i class="fas fa-car text-4xl text-gray-400"></i>
+                        </div>
+                        <div class="p-4">
+                            <h4 class="font-bold text-lg mb-2">تويوتا كورولا 2019</h4>
+                            <p class="text-emerald-600 font-bold text-xl mb-2">12,500,000 ج</p>
+                            <p class="text-gray-500 text-sm mb-3"><i class="fas fa-map-marker-alt ml-1"></i>الخرطوم</p>
+                            <button class="w-full bg-emerald-100 text-emerald-700 py-2 rounded-lg font-bold">تواصل مع البائع</button>
+                        </div>
+                    </div>
+                `;
+                return;
+            }
+
+            grid.innerHTML = products.map(p => createProductCard(p)).join('');
+        }
+
+        function createProductCard(p) {
+            return `
                 <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-                    <img src="${product.image}" class="w-full h-48 object-cover">
+                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
+                        <i class="fas fa-image text-4xl text-gray-400"></i>
+                    </div>
                     <div class="p-4">
-                        <h4 class="font-bold text-lg mb-2">${product.title}</h4>
-                        <p class="text-emerald-600 font-bold text-xl mb-2">${product.price.toLocaleString()} ج</p>
-                        <p class="text-gray-500 text-sm mb-3"><i class="fas fa-map-marker-alt ml-1"></i>${product.location}</p>
-                        <button onclick="contactSeller(${product.id})" class="w-full bg-emerald-100 text-emerald-700 py-2 rounded-lg font-bold hover:bg-emerald-200">
+                        <h4 class="font-bold text-lg mb-2">${p.title}</h4>
+                        <p class="text-emerald-600 font-bold text-xl mb-2">${p.price.toLocaleString()} ج</p>
+                        <p class="text-gray-500 text-sm mb-3 line-clamp-2">${p.description}</p>
+                        <button onclick="alert('رقم الهاتف: ${p.phone}')" class="w-full bg-emerald-100 text-emerald-700 py-2 rounded-lg font-bold hover:bg-emerald-200">
                             تواصل مع البائع
                         </button>
                     </div>
                 </div>
-            `).join('');
+            `;
         }
 
-        loadProducts();
+        function searchProducts() {
+            const query = document.getElementById('searchInput').value;
+            alert("جاري البحث عن: " + query);
+        }
+
+        // Load on start
+        document.addEventListener('DOMContentLoaded', loadProducts);
     </script>
 
 </body>
