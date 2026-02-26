@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>حسابي - زولنا</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <style>* { font-family: 'Cairo', sans-serif; }</style>
+</head>
+<body class="bg-gray-50">
+
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-3xl font-bold mb-8">حسابي - زولنا</h1>
+        
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-emerald-500 text-white p-6 rounded-2xl">
+                <h3 class="text-lg mb-2">إجمالي المبيعات</h3>
+                <p class="text-3xl font-bold" id="totalSales">0 ج</p>
+            </div>
+            <div class="bg-amber-500 text-white p-6 rounded-2xl">
+                <h3 class="text-lg mb-2">فلوسي (بعد النسبة)</h3>
+                <p class="text-3xl font-bold" id="myEarnings">0 ج</p>
+            </div>
+            <div class="bg-blue-500 text-white p-6 rounded-2xl">
+                <h3 class="text-lg mb-2">عدد المبيعات</h3>
+                <p class="text-3xl font-bold" id="salesCount">0</p>
+            </div>
+        </div>
+
+        <!-- Commission Info -->
+        <div class="bg-white p-6 rounded-2xl shadow mb-8">
+            <h3 class="text-xl font-bold mb-4">نظام النسبة</h3>
+            <p class="text-gray-600 mb-4">نسبة الموقع 2% فقط على كل عملية بيع</p>
+            <div class="bg-gray-100 p-4 rounded-lg">
+                <p class="text-sm">مثال: لو بعت بـ 100,000 جنيه</p>
+                <ul class="mt-2 space-y-1 text-sm">
+                    <li>• المشتري يدفع: 100,000 ج</li>
+                    <li>• نسبة الموقع (2%): 2,000 ج</li>
+                    <li>• أنت تستلم: 98,000 ج</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Withdrawal Section -->
+        <div class="bg-white p-6 rounded-2xl shadow">
+            <h3 class="text-xl font-bold mb-4">سحب الفلوس</h3>
+            <p class="text-gray-600 mb-4">الحد الأدنى للسحب: 10,000 جنيه</p>
+            <button class="bg-emerald-500 text-white px-8 py-3 rounded-lg font-bold" onclick="requestWithdrawal()">
+                طلب سحب
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Load seller stats
+        async function loadSellerStats() {
+            // This will connect to Firebase
+            // and show real data
+        }
+    </script>
+
+</body>
+</html>
