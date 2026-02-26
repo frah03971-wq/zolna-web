@@ -20,7 +20,7 @@
     <nav class="gradient-bg text-white sticky top-0 z-50 shadow-lg">
         <div class="container mx-auto px-4 py-3">
             <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3 space-x-reverse cursor-pointer">
+                <div class="flex items-center space-x-3 space-x-reverse cursor-pointer" onclick="window.location.href='index.html'">
                     <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
                         <span class="text-2xl font-bold text-emerald-600">ز</span>
                     </div>
@@ -32,6 +32,9 @@
                 <div class="flex items-center space-x-4 space-x-reverse">
                     <button id="loginBtn" onclick="showLogin()" class="bg-white text-emerald-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition">
                         تسجيل الدخول
+                    </button>
+                    <button onclick="goToDashboard()" class="bg-emerald-700 hover:bg-emerald-800 px-6 py-2 rounded-full font-bold transition">
+                        <i class="fas fa-user ml-2"></i>حسابي
                     </button>
                     <button onclick="showAddProduct()" class="bg-amber-500 hover:bg-amber-600 px-6 py-2 rounded-full font-bold transition">
                         <i class="fas fa-plus ml-2"></i>أضف إعلان
@@ -67,7 +70,6 @@
 
     <!-- Products Section -->
     <section class="py-12 container mx-auto px-4">
-        <h3 class="py-12 container mx-auto px-4">
         <h3 class="text-3xl font-bold mb-8 text-center">إعلانات حديثة</h3>
         <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <!-- Products will be loaded here -->
@@ -110,42 +112,20 @@
         <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
             <h3 class="text-2xl font-bold mb-6 text-center">تسجيل الدخول</h3>
             <div class="space-y-4">
-                <button onclick="loginWithPhone()" class="w-full bg-emerald-500 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2">
-                    <i class="fas fa-phone"></i> تسجيل برقم الهاتف
+                <button onclick="loginDemo()" class="w-full bg-emerald-500 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2">
+                    <i class="fas fa-user"></i> دخول سريع (بدون تسجيل)
                 </button>
-                <button onclick="loginWithGoogle()" class="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 rounded-lg font-bold flex items-center justify-center gap-2">
-                    <i class="fab fa-google text-red-500"></i> تسجيل بـ Google
-                </button>
-                <button onclick="loginWithEmail()" class="w-full bg-gray-100 text-gray-700 py-3 rounded-lg font-bold flex items-center justify-center gap-2">
-                    <i class="fas fa-envelope"></i> تسجيل بالإيميل
+                <p class="text-center text-gray-500 text-sm">أو</p>
+                <input type="text" id="demoUser" placeholder="اسم المستخدم" class="w-full px-4 py-2 border rounded-lg">
+                <button onclick="loginWithName()" class="w-full bg-amber-500 text-white py-3 rounded-lg font-bold">
+                    دخول بالاسم
                 </button>
             </div>
             <button onclick="closeLogin()" class="w-full mt-4 text-gray-500">إلغاء</button>
         </div>
     </div>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
-
     <script>
-        // Firebase Configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyCx9a7vzp5x0PM6_BurDdfXXhjvJwgbx_U",
-            authDomain: "zolna-sd.firebaseapp.com",
-            projectId: "zolna-sd",
-            storageBucket: "zolna-sd.firebasestorage.app",
-            messagingSenderId: "1079282652053",
-            appId: "1:1079282652053:web:fd8cb84c19aff096b45c9c",
-            measurementId: "G-V2KJ0CVRBX"
-        };
-
-        // Initialize Firebase
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-        const auth = firebase.auth();
-
         // Commission Rate: 2%
         const COMMISSION_RATE = 0.02;
 
@@ -170,6 +150,12 @@
         }
 
         function showAddProduct() {
+            const user = localStorage.getItem('zolna_user');
+            if (!user) {
+                alert("يجب تسجيل الدخول أولاً!");
+                showLogin();
+                return;
+            }
             document.getElementById('addProductModal').classList.remove('hidden');
         }
 
@@ -186,33 +172,42 @@
         }
 
         // Auth Functions
-        function loginWithPhone() {
-            alert("سيتم ربط Firebase Auth قريباً");
+        function loginDemo() {
+            localStorage.setItem('zolna_user', 'زائر');
+            updateLoginButton('زائر');
+            closeLogin();
+            alert("تم تسجيل الدخول!");
         }
 
-        function loginWithGoogle() {
-            const provider = new firebase.auth.GoogleAuthProvider();
-            auth.signInWithPopup(provider)
-                .then((result) => {
-                    alert("تم تسجيل الدخول: " + result.user.displayName);
-                    closeLogin();
-                })
-                .catch((error) => {
-                    alert("خطأ: " + error.message);
-                });
+        function loginWithName() {
+            const name = document.getElementById('demoUser').value || 'زائر';
+            localStorage.setItem('zolna_user', name);
+            updateLoginButton(name);
+            closeLogin();
+            alert("مرحباً " + name + "!");
         }
 
-        function loginWithEmail() {
-            const email = prompt("البريد الإلكتروني:");
-            const password = prompt("كلمة المرور:");
-            if (email && password) {
-                auth.signInWithEmailAndPassword(email, password)
-                    .then(() => {
-                        alert("تم تسجيل الدخول");
-                        closeLogin();
-                    })
-                    .catch((error) => alert("خطأ: " + error.message));
+        function updateLoginButton(name) {
+            const btn = document.getElementById('loginBtn');
+            btn.textContent = name;
+            btn.onclick = logout;
+        }
+
+        function logout() {
+            localStorage.removeItem('zolna_user');
+            document.getElementById('loginBtn').textContent = 'تسجيل الدخول';
+            document.getElementById('loginBtn').onclick = showLogin;
+            alert("تم تسجيل الخروج");
+        }
+
+        function goToDashboard() {
+            const user = localStorage.getItem('zolna_user');
+            if (!user) {
+                alert("يجب تسجيل الدخول أولاً!");
+                showLogin();
+                return;
             }
+            window.location.href = 'dashboard.html';
         }
 
         // Product Functions
@@ -220,78 +215,41 @@
             e.preventDefault();
             
             const productData = {
+                id: Date.now(),
                 title: document.getElementById('productTitle').value,
                 price: parseFloat(document.getElementById('productPrice').value),
                 description: document.getElementById('productDesc').value,
                 phone: document.getElementById('sellerPhone').value,
-                createdAt: new Date(),
+                seller: localStorage.getItem('zolna_user') || 'زائر',
+                createdAt: new Date().toLocaleDateString('ar-SD'),
                 status: 'active'
             };
 
-            // Save to Firebase (or local for now)
-            db.collection('products').add(productData)
-                .then(() => {
-                    alert("تم نشر الإعلان بنجاح!");
-                    closeAddProduct();
-                    loadProducts();
-                })
-                .catch((error) => {
-                    console.error("Error:", error);
-                    // Fallback: save locally
-                    saveProductLocal(productData);
-                });
-        }
-
-        function saveProductLocal(product) {
+            // Save to localStorage
             let products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
-            products.push({...product, id: Date.now()});
+            products.unshift(productData);
             localStorage.setItem('zolna_products', JSON.stringify(products));
-            alert("تم الحفظ محلياً (Firebase غير متصل)");
+            
+            alert("تم نشر الإعلان بنجاح!");
             closeAddProduct();
+            document.getElementById('addProductForm').reset();
             loadProducts();
         }
 
         function loadProducts() {
             const grid = document.getElementById('productsGrid');
-            
-            // Try Firebase first
-            db.collection('products').get()
-                .then((snapshot) => {
-                    if (!snapshot.empty) {
-                        grid.innerHTML = '';
-                        snapshot.forEach((doc) => {
-                            const p = doc.data();
-                            grid.innerHTML += createProductCard(p);
-                        });
-                    } else {
-                        // Load from local
-                        loadLocalProducts();
-                    }
-                })
-                .catch(() => {
-                    loadLocalProducts();
-                });
-        }
-
-        function loadLocalProducts() {
-            const grid = document.getElementById('productsGrid');
             const products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
             
             if (products.length === 0) {
                 // Sample products
-                grid.innerHTML = `
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-                        <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
-                            <i class="fas fa-car text-4xl text-gray-400"></i>
-                        </div>
-                        <div class="p-4">
-                            <h4 class="font-bold text-lg mb-2">تويوتا كورولا 2019</h4>
-                            <p class="text-emerald-600 font-bold text-xl mb-2">12,500,000 ج</p>
-                            <p class="text-gray-500 text-sm mb-3"><i class="fas fa-map-marker-alt ml-1"></i>الخرطوم</p>
-                            <button class="w-full bg-emerald-100 text-emerald-700 py-2 rounded-lg font-bold">تواصل مع البائع</button>
-                        </div>
-                    </div>
-                `;
+                const samples = [
+                    {id: 1, title: "تويوتا كورولا 2019", price: 12500000, description: "سيارة نظيفة جداً", phone: "0912345678", seller: "أحمد", createdAt: "اليوم"},
+                    {id: 2, title: "آيفون 12 برو ماكس", price: 280000, description: "64GB - بحالة ممتازة", phone: "0998765432", seller: "محمد", createdAt: "أمس"},
+                    {id: 3, title: "طقم جلوس مودرن", price: 320000, description: "3 قطع - جديد", phone: "0923456789", seller: "فاطمة", createdAt: "أمس"},
+                    {id: 4, title: "ساعة ذكية جديدة", price: 45000, description: "Samsung Galaxy Watch", phone: "0934567890", seller: "علي", createdAt: "منذ يومين"}
+                ];
+                localStorage.setItem('zolna_products', JSON.stringify(samples));
+                grid.innerHTML = samples.map(p => createProductCard(p)).join('');
                 return;
             }
 
@@ -299,6 +257,7 @@
         }
 
         function createProductCard(p) {
+            const result = calculateZolnaCommission(p.price);
             return `
                 <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
                     <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
@@ -306,9 +265,11 @@
                     </div>
                     <div class="p-4">
                         <h4 class="font-bold text-lg mb-2">${p.title}</h4>
-                        <p class="text-emerald-600 font-bold text-xl mb-2">${p.price.toLocaleString()} ج</p>
+                        <p class="text-emerald-600 font-bold text-xl mb-1">${p.price.toLocaleString()} ج</p>
+                        <p class="text-xs text-gray-500 mb-2">البائع يستلم: ${result.sellerGets.toLocaleString()} ج (بعد 2%)</p>
                         <p class="text-gray-500 text-sm mb-3 line-clamp-2">${p.description}</p>
-                        <button onclick="alert('رقم الهاتف: ${p.phone}')" class="w-full bg-emerald-100 text-emerald-700 py-2 rounded-lg font-bold hover:bg-emerald-200">
+                        <p class="text-xs text-gray-400 mb-2">بواسطة: ${p.seller} | ${p.createdAt}</p>
+                        <button onclick="contactSeller('${p.phone}')" class="w-full bg-emerald-100 text-emerald-700 py-2 rounded-lg font-bold hover:bg-emerald-200">
                             تواصل مع البائع
                         </button>
                     </div>
@@ -316,13 +277,36 @@
             `;
         }
 
+        function contactSeller(phone) {
+            alert("رقم الهاتف: " + phone + "\n\nاتصل الآن أو ارسل رسالة واتساب!");
+        }
+
         function searchProducts() {
-            const query = document.getElementById('searchInput').value;
-            alert("جاري البحث عن: " + query);
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
+            const filtered = products.filter(p => p.title.toLowerCase().includes(query));
+            
+            const grid = document.getElementById('productsGrid');
+            if (filtered.length === 0) {
+                grid.innerHTML = '<p class="text-center text-gray-500 col-span-4">لا توجد نتائج</p>';
+            } else {
+                grid.innerHTML = filtered.map(p => createProductCard(p)).join('');
+            }
+        }
+
+        // Check if user is logged in
+        function checkLogin() {
+            const user = localStorage.getItem('zolna_user');
+            if (user) {
+                updateLoginButton(user);
+            }
         }
 
         // Load on start
-        document.addEventListener('DOMContentLoaded', loadProducts);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProducts();
+            checkLogin();
+        });
     </script>
 
 </body>
