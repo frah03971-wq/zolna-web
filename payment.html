@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>الدفع - زولنا | Zolna Payment</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <style>
+        * { font-family: 'Cairo', sans-serif; }
+        
+        .gradient-bg { 
+            background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%); 
+        }
+        
+        .payment-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .payment-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .payment-card.selected {
+            border: 3px solid #059669;
+            background: #ecfdf5;
+        }
+        
+        .bankak-gradient {
+            background: linear-gradient(135deg, #e91e63 0%, #f06292 100%);
+        }
+        
+        .fawry-gradient {
+            background: linear-gradient(135deg, #2196f3 0%, #42a5f5 100%);
+        }
+        
+        .cash-gradient {
+            background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
+        }
+        
+        .step-active {
+            background: #059669;
+            color: white;
+        }
+        
+        .step-completed {
+            background: #10b981;
+            color: white;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.4s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .check-animation {
+            animation: checkPop 0.5s ease;
+        }
+        
+        @keyframes checkPop {
+            0% { transform: scale(0); }
+            50% { transform: scale(1.2); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen">
+
+    <!-- Header -->
+    <nav class="gradient-bg text-white shadow-lg">
+        <div class="container mx-auto px-4 py-4">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                        <span class="text-xl font-bold text-emerald-600">ز</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">إتمام الدفع</h1>
+                        <p class="text-xs text-emerald-100">آمن وسريع</p>
+                    </div>
+                </div>
+                <button onclick="history.back()" class="text-white hover:text-emerald-100">
+                    ← رجوع
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Progress Steps -->
+    <div class="container mx-auto px-4 py-6">
+        <div class="flex items-center justify-center gap-4 mb-8">
+            <div class="flex items-center gap-2">
+                <div id="step1-indicator" class="w-10 h-10 rounded-full flex items-center justify-center font-bold step-active">1</div>
+                <span class="hidden sm:inline text-sm font-medium">المنتج</span>
+            </div>
+            <div class="w-12 h-1 bg-gray-300 rounded" id="line1"></div>
+            <div class="flex items-center gap-2">
+                <div id="step2-indicator" class="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-gray-300 text-gray-600">2</div>
+                <span class="hidden sm:inline text-sm font-medium text-gray-500">الدفع</span>
+            </div>
+            <div class="w-12 h-1 bg-gray-300 rounded" id="line2"></div>
+            <div class="flex items-center gap-2">
+                <div id="step3-indicator" class="w-10 h-10 rounded-full flex items-center justify-center font-bold bg-gray-300 text-gray-600">3</div>
+                <span class="hidden sm:inline text-sm font-medium text-gray-500">التأكيد</span>
+            </div>
+        </div>
+
+        <!-- Step 1: Product Review -->
+        <div id="step1" class="max-w-2xl mx-auto fade-in">
+            <div class="bg-white rounded-2xl shadow-lg overflow-hidden mb-6">
+                <div class="gradient-bg text-white p-4">
+                    <h2 class="text-lg font-bold">📦 مراجعة الطلب</h2>
+                </div>
+                <div class="p-6">
+                    <div id="productDetails" class="flex gap-4 mb-6">
+                        <!-- Product loaded here -->
+                    </div>
+                    
+                    <div class="border-t pt-4 space-y-2">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">سعر المنتج</span>
+                            <span class="font-bold" id="orderPrice">0 ج</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">رسوم التوصيل</span>
+                            <span class="font-bold text-emerald-600">مجاني</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">رسوم الدفع</span>
+                            <span class="font-bold text-emerald-600">0 ج</span>
+                        </div>
+                        <div class="border-t pt-2 flex justify-between text-lg font-bold">
+                            <span>الإجمالي</span>
+                            <span class="text-emerald-600" id="orderTotal">0 ج</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button onclick="goToStep(2)" class="w-full gradient-bg text-white py-4 rounded-xl font-bold text-lg hover:opacity-90 transition">
+                متابعة للدفع →
+            </button>
+        </div>
+
+        <!-- Step 2: Payment Method -->
+        <div id="step2" class="max-w-2xl mx-auto hidden fade-in">
+            <h2 class="text-xl font-bold text-center mb-6">اختار طريقة الدفع</h2>
+            
+            <div class="grid gap-4 mb-6">
+                <!-- Bankak -->
+                <div class="payment-card bg-white rounded-2xl shadow-lg p-6" onclick="selectPayment('bankak')" id="card-bankak">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 bankak-gradient rounded-xl flex items-center justify-center text-3xl text-white">
+                            🏦
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">بنكك</h3>
+                            <p class="text-gray-500 text-sm">التحويل عبر تطبيق بنكك</p>
+                            <p class="text-emerald-600 text-sm font-medium">رسوم: 0 ج</p>
+                        </div>
+                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center check-circle" id="check-bankak">
+                            ✓
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Fawry -->
+                <div class="payment-card bg-white rounded-2xl shadow-lg p-6" onclick="selectPayment('fawry')" id="card-fawry">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 fawry-gradient rounded-xl flex items-center justify-center text-3xl text-white">
+                            💳
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">فوري</h3>
+                            <p class="text-gray-500 text-sm">الدفع عبر فوري أو فوري كاش</p>
+                            <p class="text-emerald-600 text-sm font-medium">رسوم: 0 ج</p>
+                        </div>
+                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center check-circle" id="check-fawry">
+                            ✓
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cash -->
+                <div class="payment-card bg-white rounded-2xl shadow-lg p-6" onclick="selectPayment('cash')" id="card-cash">
+                    <div class="flex items-center gap-4">
+                        <div class="w-16 h-16 cash-gradient rounded-xl flex items-center justify-center text-3xl text-white">
+                            💵
+                        </div>
+                        <div class="flex-1">
+                            <h3 class="font-bold text-lg">كاش عند الاستلام</h3>
+                            <p class="text-gray-500 text-sm">ادفع نقداً لما تستلم المنتج</p>
+                            <p class="text-amber-600 text-sm font-medium">رسوم إضافية: 2,000 ج</p>
+                        </div>
+                        <div class="w-6 h-6 rounded-full border-2 border-gray-300 flex items-center justify-center check-circle" id="check-cash">
+                            ✓
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Details Form -->
+            <div id="paymentForm" class="bg-white rounded-2xl shadow-lg p-6 mb-6 hidden">
+                <h3 class="font-bold mb-4" id="formTitle">تفاصيل الدفع</h3>
+                <div id="formFields" class="space-y-4">
+                    <!-- Dynamic fields -->
+                </div>
+            </div>
+
+            <div class="flex gap-3">
+                <button onclick="goToStep(1)" class="flex-1 bg-gray-200 text-gray-700 py-4 rounded-xl font-bold hover:bg-gray-300 transition">
+                    ← رجوع
+                </button>
+                <button onclick="goToStep(3)" id="btn-confirm" class="flex-1 gradient-bg text-white py-4 rounded-xl font-bold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                    تأكيد الطلب
+                </button>
+            </div>
+        </div>
+
+        <!-- Step 3: Confirmation -->
+        <div id="step3" class="max-w-2xl mx-auto hidden fade-in text-center">
+            <div class="bg-white rounded-2xl shadow-lg p-8">
+                <div class="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6 check-animation">
+                    <span class="text-5xl">✓</span>
+                </div>
+                
+                <h2 class="text-2xl font-bold text-emerald-600 mb-2">تم تأكيد طلبك بنجاح! 🎉</h2>
+                <p class="text-gray-600 mb-6">رقم الطلب: <span class="font-mono font-bold" id="orderNumber">-</span></p>
+
+                <div class="bg-gray-50 rounded-xl p-4 mb-6 text-right">
+                    <h3 class="font-bold mb-3">تفاصيل الطلب:</h3>
+                    <div class="space-y-2 text-sm">
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">المنتج:</span>
+                            <span class="font-bold" id="confirmProduct">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">المبلغ:</span>
+                            <span class="font-bold" id="confirmAmount">-</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-gray-600">طريقة الدفع:</span>
+                            <span class="font-bold" id="confirmMethod">-</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-amber-50 border-r-4 border-amber-500 p-4 rounded-lg mb-6 text-right">
+                    <p class="text-amber-800 text-sm">
+                        <span class="font-bold">⚠️ تنبيه:</span>
+                        <span id="paymentInstructions">سيتم توجيهك لإتمام الدفع...</span>
+                    </p>
+                </div>
+
+                <button onclick="window.location.href='index.html'" class="w-full gradient-bg text-white py-4 rounded-xl font-bold hover:opacity-90 transition">
+                    العودة للرئيسية
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Product data (from URL or localStorage)
+        let product = null;
+        let selectedMethod = null;
+        let orderData = {};
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProduct();
+        });
+
+        function loadProduct() {
+            // Try to get from URL params
+            const urlParams = new URLSearchParams(window.location.search);
+            const productId = urlParams.get('id');
+            
+            if (productId) {
+                const products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
+                product = products.find(p => p.id === productId);
+            }
+            
+            // Fallback: use last viewed or sample
+            if (!product) {
+                product = {
+                    title: 'منتج تجريبي',
+                    price: 100000,
+                    seller: 'بائع تجريبي',
+                    phone: '0912345678'
+                };
+            }
+
+            displayProduct();
+        }
+
+        function displayProduct() {
+            const container = document.getElementById('productDetails');
+            const price = product.price || 0;
+            
+            container.innerHTML = `
+                <div class="w-20 h-20 bg-gray-100 rounded-xl flex items-center justify-center text-3xl">
+                    📦
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg">${product.title}</h3>
+                    <p class="text-gray-500 text-sm">البائع: ${product.seller}</p>
+                    <p class="text-emerald-600 font-bold text-xl mt-1">${price.toLocaleString()} ج</p>
+                </div>
+            `;
+
+            document.getElementById('orderPrice').textContent = price.toLocaleString() + ' ج';
+            document.getElementById('orderTotal').textContent = price.toLocaleString() + ' ج';
+        }
+
+        // Step Navigation
+        function goToStep(step) {
+            // Hide all steps
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('step2').classList.add('hidden');
+            document.getElementById('step3').classList.add('hidden');
+
+            // Show selected
+            document.getElementById('step' + step).classList.remove('hidden');
+
+            // Update indicators
+            updateStepIndicators(step);
+
+            // Save order if going to step 3
+            if (step === 3) {
+                completeOrder();
+            }
+        }
+
+        function updateStepIndicators(currentStep) {
+            const steps = [1, 2, 3];
+            
+            steps.forEach(s => {
+                const indicator = document.getElementById('step' + s + '-indicator');
+                const line = document.getElementById('line' + (s-1));
+                
+                if (s < currentStep) {
+                    indicator.className = 'w-10 h-10 rounded-full flex items-center justify-center font-bold step-completed';
+                    indicator.innerHTML = '✓';
+                    if (line) line.classList.add('bg-emerald-500');
+                } else if (s === currentStep) {
+                    indicator.className = 'w-10 h-10 rounded-full flex items-center justify-center font-bold step-active';
+                    indicator.innerHTML = s;
+                } else {
+                    indicator.className = 'w-10 h-10 rounded-full flex items-center justify-center font-bold bg-gray-300 text-gray-600';
+                    indicator.innerHTML = s;
+                }
+            });
+        }
+
+        // Payment Selection
+        function selectPayment(method) {
+            selectedMethod = method;
+            
+            // Reset all cards
+            ['bankak', 'fawry', 'cash'].forEach(m => {
+                document.getElementById('card-' + m).classList.remove('selected');
+                document.getElementById('check-' + m).style.background = '';
+                document.getElementById('check-' + m).style.color = '';
+                document.getElementById('check-' + m).style.borderColor = '';
+            });
+
+            // Select current
+            document.getElementById('card-' + method).classList.add('selected');
+            document.getElementById('check-' + method).style.background = '#059669';
+            document.getElementById('check-' + method).style.color = 'white';
+            document.getElementById('check-' + method).style.borderColor = '#059669';
+
+            // Show form
+            showPaymentForm(method);
+            
+            // Enable confirm button
+            document.getElementById('btn-confirm').disabled = false;
+        }
+
+        function showPaymentForm(method) {
+            const form = document.getElementById('paymentForm');
+            const fields = document.getElementById('formFields');
+            
+            form.classList.remove('hidden');
+
+            const forms = {
+                bankak: `
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">رقم حساب بنكك</label>
+                        <input type="text" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" placeholder="1234567890">
+                        <p class="text-sm text-gray-500 mt-1">سيتم إرسال طلب تحويل لتطبيق بنكك</p>
+                    </div>
+                `,
+                fawry: `
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">رقم فوري</label>
+                        <input type="text" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" placeholder="0912345678">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">أو رقم البطاقة</label>
+                        <input type="text" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" placeholder="**** **** **** ****">
+                    </div>
+                `,
+                cash: `
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">العنوان بالتفصيل</label>
+                        <textarea class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" rows="3" placeholder="الحي، الشارع، أقرب معلم..."></textarea>
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">رقم هاتف إضافي</label>
+                        <input type="text" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" placeholder="0912345678">
+                    </div>
+                `
+            };
+
+            fields.innerHTML = forms[method];
+        }
+
+        function completeOrder() {
+            const orderNumber = 'ZOL-' + Date.now().toString().slice(-8);
+            
+            orderData = {
+                id: orderNumber,
+                product: product,
+                method: selectedMethod,
+                amount: product.price,
+                buyer: localStorage.getItem('zolna_user') || 'زائر',
+                seller: product.seller,
+                status: 'pending',
+                createdAt: new Date()
+            };
+
+            // Save order
+            let orders = JSON.parse(localStorage.getItem('zolna_orders') || '[]');
+            orders.push(orderData);
+            localStorage.setItem('zolna_orders', JSON.stringify(orders));
+
+            // Display confirmation
+            document.getElementById('orderNumber').textContent = orderNumber;
+            document.getElementById('confirmProduct').textContent = product.title;
+            document.getElementById('confirmAmount').textContent = product.price.toLocaleString() + ' ج';
+            document.getElementById('confirmMethod').textContent = getMethodName(selectedMethod);
+
+            // Instructions
+            const instructions = {
+                bankak: 'افتح تطبيق بنكك وقم بتحويل المبلغ إلى رقم الحساب: 1234567890 (زولنا)',
+                fawry: 'ادخل على أقرب فرع فوري أو استخدم تطبيق فوري كاش لإتمام الدفع',
+                cash: 'سيتواصل معك البائع لتحديد مكان ووقت الاستلام والدفع'
+            };
+            document.getElementById('paymentInstructions').textContent = instructions[selectedMethod];
+        }
+
+        function getMethodName(method) {
+            const names = {
+                bankak: 'بنكك',
+                fawry: 'فوري',
+                cash: 'كاش عند الاستلام'
+            };
+            return names[method] || method;
+        }
+    </script>
+
+</body>
+</html>
