@@ -3,144 +3,497 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>زولنا - كلنا زول واحد</title>
+    <title>زولنا - سوق السودان الإلكتروني | Zolna Sudan</title>
+    <meta name="description" content="أكبر سوق إلكتروني في السودان - بيع واشتري كل حاجتك بأمان مع نظام عمولة 2% فقط">
+    
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    
     <style>
         * { font-family: 'Cairo', sans-serif; }
-        .gradient-bg { background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%); }
-        .card-hover { transition: all 0.3s ease; }
-        .card-hover:hover { transform: translateY(-5px); box-shadow: 0 20px 40px rgba(0,0,0,0.1); }
+        
+        .gradient-bg { 
+            background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%); 
+        }
+        
+        .gradient-hero {
+            background: linear-gradient(135deg, #059669 0%, #047857 50%, #064e3b 100%);
+        }
+        
+        .card-hover { 
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); 
+        }
+        
+        .card-hover:hover { 
+            transform: translateY(-8px); 
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25); 
+        }
+        
+        .btn-pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+        }
+        
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .bank-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        
+        .bankak-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        }
+        
+        .fawry-card {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 text-gray-800">
+
+    <!-- Firebase Config -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx9a7vzp5x0PM6_BurDdfXXhjvJwgbx_U",
+            authDomain: "zolna-sd.firebaseapp.com",
+            projectId: "zolna-sd",
+            storageBucket: "zolna-sd.firebasestorage.app",
+            messagingSenderId: "1079282652053",
+            appId: "1:1079282652053:web:fd8cb84c19aff096b45c9c",
+            measurementId: "G-V2KJ0CVRBX"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+    </script>
 
     <!-- Navigation -->
-    <nav class="gradient-bg text-white sticky top-0 z-50 shadow-lg">
+    <nav class="gradient-bg text-white sticky top-0 z-50 shadow-2xl">
         <div class="container mx-auto px-4 py-3">
             <div class="flex items-center justify-between">
-                <div class="flex items-center space-x-3 space-x-reverse cursor-pointer" onclick="window.location.href='index.html'">
-                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center">
+                <!-- Logo -->
+                <div class="flex items-center space-x-3 space-x-reverse cursor-pointer group" onclick="window.location.href='index.html'">
+                    <div class="w-12 h-12 bg-white rounded-full flex items-center justify-center group-hover:scale-110 transition-transform">
                         <span class="text-2xl font-bold text-emerald-600">ز</span>
                     </div>
                     <div>
-                        <h1 class="text-2xl font-bold">زولنا</h1>
+                        <h1 class="text-2xl font-bold tracking-tight">زولنا</h1>
                         <p class="text-xs text-emerald-100">كلنا زول واحد</p>
                     </div>
                 </div>
-                <div class="flex items-center space-x-4 space-x-reverse">
-                    <button id="loginBtn" onclick="showLogin()" class="bg-white text-emerald-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition">
+
+                <!-- Search Bar (Desktop) -->
+                <div class="hidden md:flex flex-1 max-w-xl mx-8">
+                    <div class="relative w-full">
+                        <input type="text" id="searchInput" placeholder="دور على أي حاجة... سيارات، موبايلات، عقارات" 
+                               class="w-full px-6 py-3 rounded-full text-gray-800 outline-none focus:ring-4 focus:ring-emerald-300 text-right shadow-lg">
+                        <button onclick="searchProducts()" class="absolute left-2 top-1/2 transform -translate-y-1/2 bg-emerald-600 text-white px-6 py-2 rounded-full hover:bg-emerald-700 transition">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Buttons -->
+                <div class="flex items-center space-x-3 space-x-reverse">
+                    <button id="loginBtn" onclick="showLogin()" class="hidden md:block bg-white text-emerald-600 px-6 py-2 rounded-full font-bold hover:bg-gray-100 transition shadow-lg">
                         تسجيل الدخول
                     </button>
-                    <button onclick="goToDashboard()" class="bg-emerald-700 hover:bg-emerald-800 px-6 py-2 rounded-full font-bold transition">
-                        <i class="fas fa-user ml-2"></i>حسابي
+                    <button onclick="goToDashboard()" class="bg-emerald-700 hover:bg-emerald-800 px-5 py-2 rounded-full font-bold transition shadow-lg flex items-center gap-2">
+                        <span>👤</span>
+                        <span class="hidden sm:inline">حسابي</span>
                     </button>
-                    <button onclick="showAddProduct()" class="bg-amber-500 hover:bg-amber-600 px-6 py-2 rounded-full font-bold transition">
-                        <i class="fas fa-plus ml-2"></i>أضف إعلان
+                    <button onclick="showAddProduct()" class="bg-amber-500 hover:bg-amber-600 px-5 py-2 rounded-full font-bold transition shadow-lg btn-pulse flex items-center gap-2">
+                        <span>➕</span>
+                        <span class="hidden sm:inline">أضف إعلان</span>
                     </button>
                 </div>
+            </div>
+
+            <!-- Categories (Desktop) -->
+            <div class="hidden md:flex items-center justify-center gap-6 mt-4 pt-4 border-t border-emerald-500/30 text-sm">
+                <a href="#" onclick="filterCategory('all')" class="hover:text-amber-300 transition">الكل</a>
+                <a href="#" onclick="filterCategory('cars')" class="hover:text-amber-300 transition">سيارات</a>
+                <a href="#" onclick="filterCategory('phones')" class="hover:text-amber-300 transition">موبايلات</a>
+                <a href="#" onclick="filterCategory('electronics')" class="hover:text-amber-300 transition">إلكترونيات</a>
+                <a href="#" onclick="filterCategory('furniture')" class="hover:text-amber-300 transition">أثاث</a>
+                <a href="#" onclick="filterCategory('property')" class="hover:text-amber-300 transition">عقارات</a>
+                <a href="#" onclick="filterCategory('jobs')" class="hover:text-amber-300 transition">وظائف</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <section class="gradient-bg text-white py-16">
-        <div class="container mx-auto px-4 text-center">
-            <h2 class="text-4xl md:text-6xl font-bold mb-6">كل حاجتك في <span class="text-amber-300">مكان واحد</span></h2>
-            <p class="text-xl mb-8">سوق، خدمات، وظائف... كلنا زول واحد!</p>
+    <section class="gradient-hero text-white py-16 md:py-24 relative overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute top-0 left-0 w-96 h-96 bg-white rounded-full mix-blend-overlay filter blur-3xl transform -translate-x-1/2 -translate-y-1/2"></div>
+            <div class="absolute bottom-0 right-0 w-96 h-96 bg-amber-300 rounded-full mix-blend-overlay filter blur-3xl transform translate-x-1/2 translate-y-1/2"></div>
+        </div>
+        
+        <div class="container mx-auto px-4 text-center relative z-10">
+            <h2 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">
+                كل حاجتك في <span class="text-amber-300 inline-block transform hover:scale-110 transition">مكان واحد</span>
+            </h2>
+            <p class="text-xl md:text-2xl mb-8 text-emerald-100">سوق، خدمات، وظائف... كلنا زول واحد!</p>
             
-            <!-- Search -->
-            <div class="bg-white rounded-full p-2 flex max-w-2xl mx-auto shadow-2xl">
-                <input type="text" id="searchInput" placeholder="دور على أي حاجة..." class="flex-1 px-6 py-3 rounded-full text-gray-800 outline-none text-right">
-                <button onclick="searchProducts()" class="bg-amber-500 text-white px-8 py-3 rounded-full font-bold">
+            <!-- Mobile Search -->
+            <div class="md:hidden bg-white rounded-full p-2 flex max-w-lg mx-auto shadow-2xl mb-6">
+                <input type="text" id="mobileSearchInput" placeholder="دور على أي حاجة..." 
+                       class="flex-1 px-4 py-3 rounded-full text-gray-800 outline-none text-right text-sm">
+                <button onclick="searchProductsMobile()" class="bg-amber-500 text-white px-6 py-3 rounded-full font-bold">
                     <i class="fas fa-search"></i>
                 </button>
+            </div>
+
+            <!-- Stats -->
+            <div class="flex flex-wrap justify-center gap-8 mt-12 text-center">
+                <div>
+                    <p class="text-3xl font-bold text-amber-300" id="statUsers">0</p>
+                    <p class="text-sm text-emerald-100">مستخدم</p>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold text-amber-300" id="statProducts">0</p>
+                    <p class="text-sm text-emerald-100">إعلان</p>
+                </div>
+                <div>
+                    <p class="text-3xl font-bold text-amber-300" id="statSales">0</p>
+                    <p class="text-sm text-emerald-100">عملية بيع</p>
+                </div>
             </div>
         </div>
     </section>
 
     <!-- Commission Info Banner -->
-    <div class="bg-amber-100 border-r-4 border-amber-500 p-4 container mx-auto mt-6 rounded-lg">
-        <p class="text-amber-800 text-center">
-            <i class="fas fa-info-circle ml-2"></i>
-            نسبة الموقع 2% فقط على كل عملية بيع! الأقل في السودان 🇸🇩
+    <div class="bg-amber-100 border-r-4 border-amber-500 p-4 container mx-auto mt-6 rounded-lg shadow-lg flex items-center justify-center gap-3">
+        <i class="fas fa-percentage text-amber-600 text-2xl"></i>
+        <p class="text-amber-800 font-medium text-center">
+            نسبة الموقع <span class="font-bold text-2xl">2%</span> فقط على كل عملية بيع! الأقل في السودان 🇸🇩
+            <a href="#commission-details" class="underline mr-2 hover:text-amber-900">اعرف أكثر</a>
         </p>
     </div>
 
-    <!-- Products Section -->
-    <section class="py-12 container mx-auto px-4">
-        <h3 class="text-3xl font-bold mb-8 text-center">إعلانات حديثة</h3>
-        <div id="productsGrid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <!-- Products will be loaded here -->
+    <!-- Filters & Sort -->
+    <section class="container mx-auto px-4 py-6">
+        <div class="bg-white rounded-2xl shadow-lg p-4 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center gap-4 overflow-x-auto scrollbar-hide">
+                <span class="text-gray-500 whitespace-nowrap">تصفية حسب:</span>
+                <button onclick="filterCategory('all')" class="px-4 py-2 rounded-full bg-emerald-100 text-emerald-700 font-medium hover:bg-emerald-200 transition whitespace-nowrap">الكل</button>
+                <button onclick="filterCategory('cars')" class="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition whitespace-nowrap">🚗 سيارات</button>
+                <button onclick="filterCategory('phones')" class="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition whitespace-nowrap">📱 موبايلات</button>
+                <button onclick="filterCategory('electronics')" class="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition whitespace-nowrap">💻 إلكترونيات</button>
+                <button onclick="filterCategory('furniture')" class="px-4 py-2 rounded-full bg-gray-100 text-gray-700 font-medium hover:bg-gray-200 transition whitespace-nowrap">🪑 أثاث</button>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-gray-500">الترتيب:</span>
+                <select onchange="sortProducts(this.value)" class="px-4 py-2 rounded-lg border border-gray-300 outline-none focus:border-emerald-500">
+                    <option value="newest">الأحدث</option>
+                    <option value="price-low">السعر: من الأقل</option>
+                    <option value="price-high">السعر: من الأعلى</option>
+                </select>
+            </div>
         </div>
     </section>
 
+    <!-- Products Section -->
+    <section class="py-12 container mx-auto px-4">
+        <div class="flex items-center justify-between mb-8">
+            <h3 class="text-3xl font-bold">إعلانات حديثة</h3>
+            <a href="#" onclick="showAllProducts()" class="text-emerald-600 hover:text-emerald-700 font-medium">عرض الكل <i class="fas fa-arrow-left mr-1"></i></a>
+        </div>
+        
+        <div id="productsGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            <!-- Products loaded here -->
+        </div>
+
+        <!-- Loading State -->
+        <div id="loadingState" class="hidden text-center py-12">
+            <div class="inline-block animate-spin rounded-full h-12 w-12 border-4 border-emerald-500 border-t-transparent"></div>
+            <p class="mt-4 text-gray-500">جاري التحميل...</p>
+        </div>
+
+        <!-- Empty State -->
+        <div id="emptyState" class="hidden text-center py-12">
+            <i class="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+            <p class="text-gray-500 text-lg">لا توجد إعلانات في هذا القسم</p>
+            <button onclick="showAddProduct()" class="mt-4 bg-emerald-600 text-white px-6 py-2 rounded-full hover:bg-emerald-700 transition">أضف إعلان الآن</button>
+        </div>
+    </section>
+
+    <!-- Commission Calculator Section -->
+    <section id="commission-details" class="bg-emerald-50 py-16">
+        <div class="container mx-auto px-4">
+            <div class="max-w-4xl mx-auto bg-white rounded-3xl shadow-2xl overflow-hidden">
+                <div class="gradient-bg text-white p-8 text-center">
+                    <h3 class="text-3xl font-bold mb-2">حاسبة العمولة</h3>
+                    <p class="text-emerald-100">احسب كم هتستلم من كل عملية بيع</p>
+                </div>
+                <div class="p-8">
+                    <div class="grid md:grid-cols-2 gap-8">
+                        <div>
+                            <label class="block text-gray-700 font-bold mb-2">سعر المنتج (جنيه)</label>
+                            <input type="number" id="calcPrice" oninput="calculateCommission()" 
+                                   class="w-full px-4 py-3 rounded-xl border-2 border-gray-200 outline-none focus:border-emerald-500 text-2xl font-bold text-center" 
+                                   placeholder="100,000">
+                        </div>
+                        <div class="space-y-4">
+                            <div class="flex justify-between items-center p-4 bg-gray-50 rounded-xl">
+                                <span class="text-gray-600">سعر المنتج</span>
+                                <span class="font-bold text-xl" id="calcTotal">0 ج</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-red-50 rounded-xl text-red-700">
+                                <span>نسبة زولنا (2%)</span>
+                                <span class="font-bold text-xl" id="calcCommission">0 ج</span>
+                            </div>
+                            <div class="flex justify-between items-center p-4 bg-emerald-50 rounded-xl text-emerald-700 border-2 border-emerald-200">
+                                <span class="font-bold">صافي ربحك</span>
+                                <span class="font-bold text-2xl" id="calcNet">0 ج</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section class="py-16 container mx-auto px-4">
+        <h3 class="text-3xl font-bold text-center mb-12">ليه تختار زولنا؟</h3>
+        <div class="grid md:grid-cols-3 gap-8">
+            <div class="text-center p-6 rounded-2xl bg-white shadow-lg hover:shadow-xl transition">
+                <div class="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">🔒</div>
+                <h4 class="text-xl font-bold mb-2">أمان تام</h4>
+                <p class="text-gray-600">نظام حماية كامل للبائع والمشتري مع ضمان استرجاع الفلوس</p>
+            </div>
+            <div class="text-center p-6 rounded-2xl bg-white shadow-lg hover:shadow-xl transition">
+                <div class="w-20 h-20 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">💰</div>
+                <h4 class="text-xl font-bold mb-2">أقل عمولة</h4>
+                <p class="text-gray-600">2% فقط! الأقل في السودان مقارنة بـ 10-20% في المواقع التانية</p>
+            </div>
+            <div class="text-center p-6 rounded-2xl bg-white shadow-lg hover:shadow-xl transition">
+                <div class="w-20 h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4 text-4xl">⚡</div>
+                <h4 class="text-xl font-bold mb-2">سحب سريع</h4>
+                <p class="text-gray-600">اسحب فلوسك في نفس اليوم عبر بنكك، فوري، أو كاش</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h4 class="text-2xl font-bold mb-4 text-emerald-400">زولنا</h4>
+                    <p class="text-gray-400">أكبر سوق إلكتروني في السودان، كل حاجتك في مكان واحد.</p>
+                </div>
+                <div>
+                    <h5 class="font-bold mb-4">روابط سريعة</h5>
+                    <ul class="space-y-2 text-gray-400">
+                        <li><a href="#" class="hover:text-emerald-400 transition">عن زولنا</a></li>
+                        <li><a href="#" class="hover:text-emerald-400 transition">كيفية البيع</a></li>
+                        <li><a href="#" class="hover:text-emerald-400 transition">نظام العمولة</a></li>
+                        <li><a href="#" class="hover:text-emerald-400 transition">الأسئلة الشائعة</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="font-bold mb-4">طرق الدفع</h5>
+                    <div class="flex gap-3 text-2xl">
+                        <span title="بنكك">🏦</span>
+                        <span title="فوري">💳</span>
+                        <span title="كاش">💵</span>
+                    </div>
+                </div>
+                <div>
+                    <h5 class="font-bold mb-4">تواصل معنا</h5>
+                    <div class="flex gap-4">
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-emerald-600 transition">
+                            <i class="fab fa-whatsapp"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-emerald-600 transition">
+                            <i class="fab fa-telegram"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 bg-gray-800 rounded-full flex items-center justify-center hover:bg-emerald-600 transition">
+                            <i class="fab fa-facebook"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8 text-center text-gray-500">
+                <p>© 2024 زولنا - كلنا زول واحد 🇸🇩</p>
+            </div>
+        </div>
+    </footer>
+
     <!-- Add Product Modal -->
-    <div id="addProductModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
-            <h3 class="text-2xl font-bold mb-6">إضافة إعلان جديد</h3>
-            <form id="addProductForm" onsubmit="submitProduct(event)">
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">عنوان المنتج</label>
-                    <input type="text" id="productTitle" required class="w-full px-4 py-2 border rounded-lg outline-none focus:border-emerald-500">
+    <div id="addProductModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full max-h-[90vh] overflow-y-auto">
+            <div class="gradient-bg text-white p-6 rounded-t-2xl flex justify-between items-center">
+                <h3 class="text-2xl font-bold">إضافة إعلان جديد</h3>
+                <button onclick="closeAddProduct()" class="text-white hover:text-gray-200 text-2xl">×</button>
+            </div>
+            <form id="addProductForm" onsubmit="submitProduct(event)" class="p-6 space-y-4">
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">عنوان المنتج *</label>
+                    <input type="text" id="productTitle" required 
+                           class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" 
+                           placeholder="مثال: تويوتا كورولا 2019">
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">السعر (جنيه)</label>
-                    <input type="number" id="productPrice" required class="w-full px-4 py-2 border rounded-lg outline-none focus:border-emerald-500" oninput="calculateFee()">
-                    <p class="text-sm text-gray-500 mt-1">نسبة الموقع (2%): <span id="commissionAmount" class="text-emerald-600 font-bold">0</span> جنيه</p>
-                    <p class="text-sm text-gray-500">تحصل أنت: <span id="sellerAmount" class="text-amber-600 font-bold">0</span> جنيه</p>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">السعر (جنيه) *</label>
+                        <input type="number" id="productPrice" required min="1"
+                               class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" 
+                               placeholder="100000" oninput="updateCommissionPreview()">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">الفئة *</label>
+                        <select id="productCategory" required class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500">
+                            <option value="">اختار الفئة</option>
+                            <option value="cars">🚗 سيارات</option>
+                            <option value="phones">📱 موبايلات</option>
+                            <option value="electronics">💻 إلكترونيات</option>
+                            <option value="furniture">🪑 أثاث</option>
+                            <option value="property">🏠 عقارات</option>
+                            <option value="jobs">💼 وظائف</option>
+                            <option value="other">📦 أخرى</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">الوصف</label>
-                    <textarea id="productDesc" required class="w-full px-4 py-2 border rounded-lg outline-none focus:border-emerald-500 h-24"></textarea>
+
+                <!-- Commission Preview -->
+                <div class="bg-amber-50 border-r-4 border-amber-500 p-4 rounded-lg">
+                    <p class="text-sm text-amber-800 mb-2">معاينة العمولة:</p>
+                    <div class="flex justify-between text-sm">
+                        <span>سعر المنتج: <span id="previewPrice" class="font-bold">0</span> ج</span>
+                        <span class="text-red-600">العمولة (2%): <span id="previewCommission" class="font-bold">0</span> ج</span>
+                    </div>
+                    <p class="text-emerald-700 font-bold mt-2">صافي ربحك: <span id="previewNet">0</span> ج</p>
                 </div>
-                <div class="mb-4">
-                    <label class="block text-gray-700 mb-2">رقم الهاتف للتواصل</label>
-                    <input type="tel" id="sellerPhone" required class="w-full px-4 py-2 border rounded-lg outline-none focus:border-emerald-500" placeholder="مثال: 0912345678">
+
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">الوصف *</label>
+                    <textarea id="productDesc" required rows="3"
+                              class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" 
+                              placeholder="اكتب وصف تفصيلي للمنتج..."></textarea>
                 </div>
-                <div class="flex gap-4">
-                    <button type="submit" class="flex-1 gradient-bg text-white py-3 rounded-lg font-bold">نشر الإعلان</button>
-                    <button type="button" onclick="closeAddProduct()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold">إلغاء</button>
+
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">رقم الهاتف للتواصل *</label>
+                    <input type="tel" id="sellerPhone" required 
+                           class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" 
+                           placeholder="مثال: 0912345678">
+                </div>
+
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">الموقع</label>
+                    <select id="productLocation" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500">
+                        <option value="الخرطوم">الخرطوم</option>
+                        <option value="أم درمان">أم درمان</option>
+                        <option value="بحري">بحري</option>
+                        <option value="مدني">مدني</option>
+                        <option value="بورتسودان">بورتسودان</option>
+                        <option value="أخرى">أخرى</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 gradient-bg text-white py-3 rounded-lg font-bold hover:opacity-90 transition">
+                        نشر الإعلان
+                    </button>
+                    <button type="button" onclick="closeAddProduct()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                        إلغاء
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center">
-        <div class="bg-white rounded-2xl p-8 max-w-md w-full mx-4">
-            <h3 class="text-2xl font-bold mb-6 text-center">تسجيل الدخول</h3>
-            <div class="space-y-4">
-                <button onclick="loginDemo()" class="w-full bg-emerald-500 text-white py-3 rounded-lg font-bold flex items-center justify-center gap-2">
-                    <i class="fas fa-user"></i> دخول سريع (بدون تسجيل)
-                </button>
-                <p class="text-center text-gray-500 text-sm">أو</p>
-                <input type="text" id="demoUser" placeholder="اسم المستخدم" class="w-full px-4 py-2 border rounded-lg">
-                <button onclick="loginWithName()" class="w-full bg-amber-500 text-white py-3 rounded-lg font-bold">
-                    دخول بالاسم
-                </button>
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-8 text-center">
+            <h3 class="text-2xl font-bold mb-6">تسجيل الدخول</h3>
+            
+            <button onclick="loginDemo()" class="w-full bg-emerald-500 text-white py-4 rounded-xl font-bold mb-4 hover:bg-emerald-600 transition flex items-center justify-center gap-3 text-lg">
+                <span>👤</span>
+                دخول سريع (بدون تسجيل)
+            </button>
+            
+            <div class="relative my-6">
+                <div class="absolute inset-0 flex items-center">
+                    <div class="w-full border-t border-gray-300"></div>
+                </div>
+                <div class="relative flex justify-center text-sm">
+                    <span class="px-2 bg-white text-gray-500">أو</span>
+                </div>
             </div>
-            <button onclick="closeLogin()" class="w-full mt-4 text-gray-500">إلغاء</button>
+            
+            <input type="text" id="demoUser" placeholder="اكتب اسمك" 
+                   class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500 mb-4">
+            
+            <button onclick="loginWithName()" class="w-full bg-amber-500 text-white py-3 rounded-lg font-bold hover:bg-amber-600 transition">
+                دخول بالاسم
+            </button>
+            
+            <button onclick="closeLogin()" class="w-full mt-4 text-gray-500 hover:text-gray-700">إلغاء</button>
         </div>
     </div>
 
+    <!-- JavaScript -->
     <script>
-        // Commission Rate: 2%
+        // Constants
         const COMMISSION_RATE = 0.02;
+        const MIN_WITHDRAWAL = 10000;
 
-        // Calculate commission
-        function calculateZolnaCommission(price) {
-            const commission = Math.round(price * COMMISSION_RATE);
-            return {
-                originalPrice: price,
-                commission: commission,
-                sellerGets: price - commission,
-                zolnaGets: commission
-            };
+        // Global Variables
+        let currentUser = null;
+        let allProducts = [];
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+            loadProducts();
+            updateStats();
+        });
+
+        // Auth Functions
+        function checkAuth() {
+            const user = localStorage.getItem('zolna_user');
+            if (user) {
+                currentUser = user;
+                updateLoginButton(user);
+            }
         }
 
-        // UI Functions
         function showLogin() {
             document.getElementById('loginModal').classList.remove('hidden');
         }
@@ -149,10 +502,62 @@
             document.getElementById('loginModal').classList.add('hidden');
         }
 
+        function loginDemo() {
+            const name = 'زائر_' + Math.floor(Math.random() * 1000);
+            completeLogin(name);
+        }
+
+        function loginWithName() {
+            const name = document.getElementById('demoUser').value.trim();
+            if (!name) {
+                alert('يرجى إدخال اسم');
+                return;
+            }
+            completeLogin(name);
+        }
+
+        function completeLogin(name) {
+            localStorage.setItem('zolna_user', name);
+            currentUser = name;
+            updateLoginButton(name);
+            closeLogin();
+            
+            // Save to Firebase
+            db.collection('users').doc(name).set({
+                name: name,
+                joinedAt: new Date(),
+                lastLogin: new Date()
+            }, { merge: true });
+            
+            showNotification('مرحباً ' + name + '! 🎉');
+        }
+
+        function updateLoginButton(name) {
+            const btn = document.getElementById('loginBtn');
+            btn.textContent = name;
+            btn.onclick = logout;
+            btn.classList.remove('hidden');
+        }
+
+        function logout() {
+            if (confirm('تأكد تبي تسجل خروج؟')) {
+                localStorage.removeItem('zolna_user');
+                currentUser = null;
+                location.reload();
+            }
+        }
+
+        function goToDashboard() {
+            if (!currentUser) {
+                showLogin();
+                return;
+            }
+            window.location.href = 'dashboard.html';
+        }
+
+        // Product Functions
         function showAddProduct() {
-            const user = localStorage.getItem('zolna_user');
-            if (!user) {
-                alert("يجب تسجيل الدخول أولاً!");
+            if (!currentUser) {
                 showLogin();
                 return;
             }
@@ -163,113 +568,221 @@
             document.getElementById('addProductModal').classList.add('hidden');
         }
 
-        function calculateFee() {
+        function updateCommissionPreview() {
             const price = parseFloat(document.getElementById('productPrice').value) || 0;
-            const result = calculateZolnaCommission(price);
+            const commission = Math.round(price * COMMISSION_RATE);
+            const net = price - commission;
             
-            document.getElementById('commissionAmount').textContent = result.commission.toLocaleString();
-            document.getElementById('sellerAmount').textContent = result.sellerGets.toLocaleString();
+            document.getElementById('previewPrice').textContent = price.toLocaleString();
+            document.getElementById('previewCommission').textContent = commission.toLocaleString();
+            document.getElementById('previewNet').textContent = net.toLocaleString();
         }
 
-        // Auth Functions
-        function loginDemo() {
-            localStorage.setItem('zolna_user', 'زائر');
-            updateLoginButton('زائر');
-            closeLogin();
-            alert("تم تسجيل الدخول!");
-        }
-
-        function loginWithName() {
-            const name = document.getElementById('demoUser').value || 'زائر';
-            localStorage.setItem('zolna_user', name);
-            updateLoginButton(name);
-            closeLogin();
-            alert("مرحباً " + name + "!");
-        }
-
-        function updateLoginButton(name) {
-            const btn = document.getElementById('loginBtn');
-            btn.textContent = name;
-            btn.onclick = logout;
-        }
-
-        function logout() {
-            localStorage.removeItem('zolna_user');
-            document.getElementById('loginBtn').textContent = 'تسجيل الدخول';
-            document.getElementById('loginBtn').onclick = showLogin;
-            alert("تم تسجيل الخروج");
-        }
-
-        function goToDashboard() {
-            const user = localStorage.getItem('zolna_user');
-            if (!user) {
-                alert("يجب تسجيل الدخول أولاً!");
-                showLogin();
-                return;
-            }
-            window.location.href = 'dashboard.html';
-        }
-
-        // Product Functions
         function submitProduct(e) {
             e.preventDefault();
             
-            const productData = {
-                id: Date.now(),
+            const price = parseFloat(document.getElementById('productPrice').value);
+            const commission = Math.round(price * COMMISSION_RATE);
+            
+            const product = {
+                id: Date.now().toString(),
                 title: document.getElementById('productTitle').value,
-                price: parseFloat(document.getElementById('productPrice').value),
+                price: price,
+                commission: commission,
+                netPrice: price - commission,
+                category: document.getElementById('productCategory').value,
                 description: document.getElementById('productDesc').value,
                 phone: document.getElementById('sellerPhone').value,
-                seller: localStorage.getItem('zolna_user') || 'زائر',
-                createdAt: new Date().toLocaleDateString('ar-SD'),
-                status: 'active'
+                location: document.getElementById('productLocation').value,
+                seller: currentUser,
+                sellerId: currentUser,
+                createdAt: new Date(),
+                status: 'active',
+                views: 0
             };
 
-            // Save to localStorage
+            // Save to Firebase
+            db.collection('products').doc(product.id).set(product)
+                .then(() => {
+                    // Save to local
+                    let products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
+                    products.unshift(product);
+                    localStorage.setItem('zolna_products', JSON.stringify(products));
+                    
+                    closeAddProduct();
+                    document.getElementById('addProductForm').reset();
+                    loadProducts();
+                    showNotification('تم نشر الإعلان بنجاح! 🎉');
+                })
+                .catch(err => {
+                    console.error('Error:', err);
+                    // Fallback to local
+                    saveProductLocal(product);
+                });
+        }
+
+        function saveProductLocal(product) {
             let products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
-            products.unshift(productData);
+            products.unshift(product);
             localStorage.setItem('zolna_products', JSON.stringify(products));
             
-            alert("تم نشر الإعلان بنجاح!");
             closeAddProduct();
             document.getElementById('addProductForm').reset();
             loadProducts();
+            showNotification('تم الحفظ محلياً (Firebase غير متصل)');
         }
 
         function loadProducts() {
             const grid = document.getElementById('productsGrid');
-            const products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
+            const loading = document.getElementById('loadingState');
+            const empty = document.getElementById('emptyState');
+            
+            loading.classList.remove('hidden');
+            grid.innerHTML = '';
+            
+            // Try Firebase first
+            db.collection('products').orderBy('createdAt', 'desc').limit(20).get()
+                .then(snapshot => {
+                    loading.classList.add('hidden');
+                    
+                    if (snapshot.empty) {
+                        // Load from local or samples
+                        loadLocalProducts();
+                        return;
+                    }
+                    
+                    allProducts = [];
+                    snapshot.forEach(doc => {
+                        allProducts.push({ id: doc.id, ...doc.data() });
+                    });
+                    
+                    displayProducts(allProducts);
+                })
+                .catch(() => {
+                    loading.classList.add('hidden');
+                    loadLocalProducts();
+                });
+        }
+
+        function loadLocalProducts() {
+            let products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
             
             if (products.length === 0) {
                 // Sample products
-                const samples = [
-                    {id: 1, title: "تويوتا كورولا 2019", price: 12500000, description: "سيارة نظيفة جداً", phone: "0912345678", seller: "أحمد", createdAt: "اليوم"},
-                    {id: 2, title: "آيفون 12 برو ماكس", price: 280000, description: "64GB - بحالة ممتازة", phone: "0998765432", seller: "محمد", createdAt: "أمس"},
-                    {id: 3, title: "طقم جلوس مودرن", price: 320000, description: "3 قطع - جديد", phone: "0923456789", seller: "فاطمة", createdAt: "أمس"},
-                    {id: 4, title: "ساعة ذكية جديدة", price: 45000, description: "Samsung Galaxy Watch", phone: "0934567890", seller: "علي", createdAt: "منذ يومين"}
+                products = [
+                    {
+                        id: '1',
+                        title: 'تويوتا كورولا 2019',
+                        price: 12500000,
+                        netPrice: 12250000,
+                        category: 'cars',
+                        description: 'سيارة نظيفة جداً، ماشية 50,000 كم',
+                        phone: '0912345678',
+                        location: 'الخرطوم',
+                        seller: 'أحمد',
+                        createdAt: new Date()
+                    },
+                    {
+                        id: '2',
+                        title: 'آيفون 14 Pro Max',
+                        price: 450000,
+                        netPrice: 441000,
+                        category: 'phones',
+                        description: '256GB - جديد مع الكرتونة',
+                        phone: '0998765432',
+                        location: 'أم درمان',
+                        seller: 'محمد',
+                        createdAt: new Date()
+                    },
+                    {
+                        id: '3',
+                        title: 'طقم جلوس مودرن',
+                        price: 320000,
+                        netPrice: 313600,
+                        category: 'furniture',
+                        description: '3+2+1+1 - خشب زان أصلي',
+                        phone: '0923456789',
+                        location: 'بحري',
+                        seller: 'فاطمة',
+                        createdAt: new Date()
+                    },
+                    {
+                        id: '4',
+                        title: 'شقة للبيع - الرياض',
+                        price: 150000000,
+                        netPrice: 147000000,
+                        category: 'property',
+                        description: '3 غرف، صالة، مطبخ، 2 حمام',
+                        phone: '0934567890',
+                        location: 'الخرطوم',
+                        seller: 'عمر',
+                        createdAt: new Date()
+                    }
                 ];
-                localStorage.setItem('zolna_products', JSON.stringify(samples));
-                grid.innerHTML = samples.map(p => createProductCard(p)).join('');
+                localStorage.setItem('zolna_products', JSON.stringify(products));
+            }
+            
+            allProducts = products;
+            displayProducts(products);
+        }
+
+        function displayProducts(products) {
+            const grid = document.getElementById('productsGrid');
+            
+            if (products.length === 0) {
+                document.getElementById('emptyState').classList.remove('hidden');
                 return;
             }
-
+            
+            document.getElementById('emptyState').classList.add('hidden');
+            
             grid.innerHTML = products.map(p => createProductCard(p)).join('');
         }
 
         function createProductCard(p) {
-            const result = calculateZolnaCommission(p.price);
+            const date = p.createdAt?.toDate ? p.createdAt.toDate().toLocaleDateString('ar-SD') : 
+                        (typeof p.createdAt === 'string' ? p.createdAt : 'حديثاً');
+            
+            const categoryIcons = {
+                cars: '🚗',
+                phones: '📱',
+                electronics: '💻',
+                furniture: '🪑',
+                property: '🏠',
+                jobs: '💼',
+                other: '📦'
+            };
+            
             return `
-                <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover">
-                    <div class="w-full h-48 bg-gray-200 flex items-center justify-center">
-                        <i class="fas fa-image text-4xl text-gray-400"></i>
+                <div class="bg-white rounded-2xl shadow-lg overflow-hidden card-hover fade-in border border-gray-100">
+                    <div class="relative">
+                        <div class="w-full h-48 bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                            <span class="text-6xl">${categoryIcons[p.category] || '📦'}</span>
+                        </div>
+                        <div class="absolute top-3 left-3 bg-emerald-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                            ${categoryIcons[p.category] || ''} ${getCategoryName(p.category)}
+                        </div>
+                        <div class="absolute top-3 right-3 bg-amber-500 text-white px-3 py-1 rounded-full text-xs font-bold">
+                            ${p.location || 'الخرطوم'}
+                        </div>
                     </div>
-                    <div class="p-4">
-                        <h4 class="font-bold text-lg mb-2">${p.title}</h4>
-                        <p class="text-emerald-600 font-bold text-xl mb-1">${p.price.toLocaleString()} ج</p>
-                        <p class="text-xs text-gray-500 mb-2">البائع يستلم: ${result.sellerGets.toLocaleString()} ج (بعد 2%)</p>
-                        <p class="text-gray-500 text-sm mb-3 line-clamp-2">${p.description}</p>
-                        <p class="text-xs text-gray-400 mb-2">بواسطة: ${p.seller} | ${p.createdAt}</p>
-                        <button onclick="contactSeller('${p.phone}')" class="w-full bg-emerald-100 text-emerald-700 py-2 rounded-lg font-bold hover:bg-emerald-200">
+                    <div class="p-5">
+                        <h4 class="font-bold text-lg mb-2 line-clamp-1">${p.title}</h4>
+                        <div class="flex items-baseline gap-2 mb-2">
+                            <span class="text-emerald-600 font-bold text-2xl">${p.price?.toLocaleString() || 0} ج</span>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-3">
+                            البائع يستلم: <span class="text-emerald-600 font-bold">${p.netPrice?.toLocaleString() || (p.price * 0.98).toLocaleString()} ج</span>
+                            <span class="text-red-500">(بعد 2%)</span>
+                        </p>
+                        <p class="text-gray-600 text-sm mb-4 line-clamp-2">${p.description}</p>
+                        <div class="flex items-center justify-between text-sm text-gray-500 mb-4">
+                            <span>👤 ${p.seller}</span>
+                            <span>📅 ${date}</span>
+                        </div>
+                        <button onclick="contactSeller('${p.phone}', '${p.seller}')" 
+                                class="w-full bg-emerald-100 text-emerald-700 py-3 rounded-xl font-bold hover:bg-emerald-200 transition flex items-center justify-center gap-2">
+                            <span>📞</span>
                             تواصل مع البائع
                         </button>
                     </div>
@@ -277,36 +790,118 @@
             `;
         }
 
-        function contactSeller(phone) {
-            alert("رقم الهاتف: " + phone + "\n\nاتصل الآن أو ارسل رسالة واتساب!");
+        function getCategoryName(cat) {
+            const names = {
+                cars: 'سيارات',
+                phones: 'موبايلات',
+                electronics: 'إلكترونيات',
+                furniture: 'أثاث',
+                property: 'عقارات',
+                jobs: 'وظائف',
+                other: 'أخرى'
+            };
+            return names[cat] || cat;
         }
 
+        function contactSeller(phone, seller) {
+            if (!currentUser) {
+                showLogin();
+                return;
+            }
+            alert(`👤 البائع: ${seller}\n📞 الرقم: ${phone}\n\n💡 نصيحة: اتصل الآن أو ارسل واتساب!`);
+        }
+
+        // Search & Filter
         function searchProducts() {
             const query = document.getElementById('searchInput').value.toLowerCase();
-            const products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
-            const filtered = products.filter(p => p.title.toLowerCase().includes(query));
-            
-            const grid = document.getElementById('productsGrid');
-            if (filtered.length === 0) {
-                grid.innerHTML = '<p class="text-center text-gray-500 col-span-4">لا توجد نتائج</p>';
+            filterAndDisplay(query);
+        }
+
+        function searchProductsMobile() {
+            const query = document.getElementById('mobileSearchInput').value.toLowerCase();
+            filterAndDisplay(query);
+        }
+
+        function filterCategory(category) {
+            if (category === 'all') {
+                displayProducts(allProducts);
             } else {
-                grid.innerHTML = filtered.map(p => createProductCard(p)).join('');
+                const filtered = allProducts.filter(p => p.category === category);
+                displayProducts(filtered);
             }
         }
 
-        // Check if user is logged in
-        function checkLogin() {
-            const user = localStorage.getItem('zolna_user');
-            if (user) {
-                updateLoginButton(user);
-            }
+        function filterAndDisplay(query) {
+            const filtered = allProducts.filter(p => 
+                p.title.toLowerCase().includes(query) || 
+                p.description.toLowerCase().includes(query)
+            );
+            displayProducts(filtered);
         }
 
-        // Load on start
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProducts();
-            checkLogin();
-        });
+        function sortProducts(sortBy) {
+            let sorted = [...allProducts];
+            
+            switch(sortBy) {
+                case 'price-low':
+                    sorted.sort((a, b) => a.price - b.price);
+                    break;
+                case 'price-high':
+                    sorted.sort((a, b) => b.price - a.price);
+                    break;
+                case 'newest':
+                default:
+                    sorted.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+            }
+            
+            displayProducts(sorted);
+        }
+
+        // Commission Calculator
+        function calculateCommission() {
+            const price = parseFloat(document.getElementById('calcPrice').value) || 0;
+            const commission = Math.round(price * COMMISSION_RATE);
+            const net = price - commission;
+            
+            document.getElementById('calcTotal').textContent = price.toLocaleString() + ' ج';
+            document.getElementById('calcCommission').textContent = commission.toLocaleString() + ' ج';
+            document.getElementById('calcNet').textContent = net.toLocaleString() + ' ج';
+        }
+
+        // Stats
+        function updateStats() {
+            // Animate numbers
+            animateNumber('statUsers', 1250);
+            animateNumber('statProducts', allProducts.length || 450);
+            animateNumber('statSales', 890);
+        }
+
+        function animateNumber(id, target) {
+            const el = document.getElementById(id);
+            let current = 0;
+            const increment = target / 50;
+            const timer = setInterval(() => {
+                current += increment;
+                if (current >= target) {
+                    current = target;
+                    clearInterval(timer);
+                }
+                el.textContent = Math.floor(current).toLocaleString();
+            }, 30);
+        }
+
+        // Notification
+        function showNotification(message) {
+            const div = document.createElement('div');
+            div.className = 'fixed top-20 left-1/2 transform -translate-x-1/2 bg-emerald-600 text-white px-6 py-3 rounded-full shadow-2xl z-50 fade-in';
+            div.textContent = message;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
+        }
+
+        function showAllProducts() {
+            displayProducts(allProducts);
+        }
     </script>
 
 </body>
