@@ -3,153 +3,415 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>حسابي - زولنا</title>
+    <title>حسابي - زولنا | Zolna Dashboard</title>
+    
     <script src="https://cdn.tailwindcss.com"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <style>* { font-family: 'Cairo', sans-serif; }</style>
+    
+    <!-- Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-firestore-compat.js"></script>
+    
+    <style>
+        * { font-family: 'Cairo', sans-serif; }
+        
+        .gradient-bg { 
+            background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%); 
+        }
+        
+        .card-hover { 
+            transition: all 0.3s ease; 
+        }
+        
+        .card-hover:hover { 
+            transform: translateY(-5px); 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15); 
+        }
+        
+        .bank-card-bankak {
+            background: linear-gradient(135deg, #e91e63 0%, #f48fb1 100%);
+        }
+        
+        .bank-card-fawry {
+            background: linear-gradient(135deg, #2196f3 0%, #64b5f6 100%);
+        }
+        
+        .bank-card-cash {
+            background: linear-gradient(135deg, #ff9800 0%, #ffb74d 100%);
+        }
+        
+        .tab-active {
+            border-bottom: 3px solid #059669;
+            color: #059669;
+            font-weight: bold;
+        }
+        
+        .progress-bar {
+            transition: width 0.5s ease;
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .pulse-dot {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
 </head>
 <body class="bg-gray-50">
 
+    <!-- Firebase Config -->
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyCx9a7vzp5x0PM6_BurDdfXXhjvJwgbx_U",
+            authDomain: "zolna-sd.firebaseapp.com",
+            projectId: "zolna-sd",
+            storageBucket: "zolna-sd.firebasestorage.app",
+            messagingSenderId: "1079282652053",
+            appId: "1:1079282652053:web:fd8cb84c19aff096b45c9c",
+            measurementId: "G-V2KJ0CVRBX"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        const auth = firebase.auth();
+    </script>
+
     <!-- Navigation -->
-    <nav class="bg-emerald-600 text-white sticky top-0 z-50 shadow-lg">
-        <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-3">
-                <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-                    <span class="text-xl font-bold text-emerald-600">ز</span>
+    <nav class="gradient-bg text-white sticky top-0 z-50 shadow-xl">
+        <div class="container mx-auto px-4 py-3">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3 cursor-pointer" onclick="window.location.href='index.html'">
+                    <div class="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+                        <span class="text-xl font-bold text-emerald-600">ز</span>
+                    </div>
+                    <div>
+                        <h1 class="text-xl font-bold">حسابي</h1>
+                        <p class="text-xs text-emerald-100">لوحة التحكم</p>
+                    </div>
                 </div>
-                <h1 class="text-xl font-bold">حسابي</h1>
+                <div class="flex items-center gap-3">
+                    <button onclick="window.location.href='index.html'" class="bg-emerald-700 hover:bg-emerald-800 px-4 py-2 rounded-full text-sm transition">
+                        ← الرئيسية
+                    </button>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-4 py-2 rounded-full text-sm transition">
+                        خروج
+                    </button>
+                </div>
             </div>
-            <a href="index.html" class="text-white hover:text-emerald-100">
-                <i class="fas fa-home"></i> الرئيسية
-            </a>
         </div>
     </nav>
 
-    <div class="container mx-auto px-4 py-8">
+    <!-- Main Content -->
+    <div class="container mx-auto px-4 py-6">
         
-        <!-- User Info -->
-        <div class="bg-white p-6 rounded-2xl shadow mb-6">
-            <h2 class="text-2xl font-bold mb-2">مرحباً، <span id="userName">زائر</span> 👋</h2>
-            <p class="text-gray-500">رقم الحساب: <span id="accountNumber">-</span></p>
+        <!-- User Header -->
+        <div class="bg-white rounded-2xl shadow-lg p-6 mb-6 fade-in">
+            <div class="flex items-center gap-4">
+                <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center text-3xl">
+                    👤
+                </div>
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-800">مرحباً، <span id="userName">زائر</span> 👋</h2>
+                    <p class="text-gray-500">رقم الحساب: <span id="accountNumber" class="font-mono text-emerald-600">-</span></p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <span class="w-2 h-2 bg-emerald-500 rounded-full pulse-dot"></span>
+                        <span class="text-sm text-emerald-600">حساب نشط</span>
+                    </div>
+                </div>
+            </div>
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
             <!-- إجمالي المبيعات -->
-            <div class="bg-emerald-500 text-white p-6 rounded-2xl">
+            <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 text-white p-6 rounded-2xl shadow-lg card-hover">
                 <div class="flex justify-between items-start">
                     <div>
-                        <h3 class="text-lg mb-2">إجمالي المبيعات</h3>
+                        <p class="text-emerald-100 text-sm mb-1">إجمالي المبيعات</p>
                         <p class="text-3xl font-bold" id="totalSales">0 ج</p>
                     </div>
-                    <i class="fas fa-chart-line text-4xl opacity-50"></i>
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
+                        💰
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-white/20">
+                    <p class="text-sm text-emerald-100">+12% هذا الشهر</p>
                 </div>
             </div>
 
-            <!-- فلوسي (بعد النسبة) -->
-            <div class="bg-amber-500 text-white p-6 rounded-2xl">
-                <div class="flex justify-between items-start">
+            <!-- رصيدي -->
+            <div class="bg-gradient-to-br from-amber-500 to-amber-600 text-white p-6 rounded-2xl shadow-lg card-hover relative overflow-hidden">
+                <div class="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-10 -mt-10"></div>
+                <div class="flex justify-between items-start relative z-10">
                     <div>
-                        <h3 class="text-lg mb-2">رصيدي القابل للسحب</h3>
+                        <p class="text-amber-100 text-sm mb-1">رصيدي القابل للسحب</p>
                         <p class="text-3xl font-bold" id="myEarnings">0 ج</p>
+                        <p class="text-xs text-amber-100 mt-1">بعد خصم 2% نسبة الموقع</p>
                     </div>
-                    <i class="fas fa-wallet text-4xl opacity-50"></i>
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
+                        💳
+                    </div>
                 </div>
-                <p class="text-sm mt-2 opacity-90">بعد خصم 2% نسبة الموقع</p>
+                <div class="mt-4 pt-4 border-t border-white/20 relative z-10">
+                    <button onclick="showWithdrawModal()" class="bg-white text-amber-600 px-4 py-2 rounded-lg text-sm font-bold hover:bg-gray-100 transition w-full">
+                        سحب الآن
+                    </button>
+                </div>
             </div>
 
             <!-- عدد المبيعات -->
-            <div class="bg-blue-500 text-white p-6 rounded-2xl">
+            <div class="bg-gradient-to-br from-blue-500 to-blue-600 text-white p-6 rounded-2xl shadow-lg card-hover">
                 <div class="flex justify-between items-start">
                     <div>
-                        <h3 class="text-lg mb-2">عدد المبيعات</h3>
+                        <p class="text-blue-100 text-sm mb-1">عدد المبيعات</p>
                         <p class="text-3xl font-bold" id="salesCount">0</p>
                     </div>
-                    <i class="fas fa-shopping-bag text-4xl opacity-50"></i>
+                    <div class="w-12 h-12 bg-white/20 rounded-full flex items-center justify-center text-2xl">
+                        📦
+                    </div>
+                </div>
+                <div class="mt-4 pt-4 border-t border-white/20">
+                    <p class="text-sm text-blue-100">5 طلبات قيد التنفيذ</p>
                 </div>
             </div>
         </div>
 
-        <!-- Commission Details -->
-        <div class="bg-white p-6 rounded-2xl shadow mb-8">
-            <h3 class="text-xl font-bold mb-4"><i class="fas fa-calculator ml-2"></i>تفاصيل النسبة</h3>
-            <div class="overflow-x-auto">
-                <table class="w-full text-right">
-                    <thead class="bg-gray-100">
-                        <tr>
-                            <th class="p-3">البند</th>
-                            <th class="p-3">المبلغ</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr class="border-b">
-                            <td class="p-3">إجمالي المبيعات</td>
-                            <td class="p-3 font-bold" id="detailTotal">0 ج</td>
-                        </tr>
-                        <tr class="border-b text-red-600">
-                            <td class="p-3">نسبة الموقع (2%)</td>
-                            <td class="p-3 font-bold" id="detailCommission">0 ج</td>
-                        </tr>
-                        <tr class="bg-emerald-50 text-emerald-700">
-                            <td class="p-3 font-bold">صافي ربحك</td>
-                            <td class="p-3 font-bold text-xl" id="detailNet">0 ج</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- My Products -->
-        <div class="bg-white p-6 rounded-2xl shadow mb-8">
-            <h3 class="text-xl font-bold mb-4"><i class="fas fa-box ml-2"></i>منتجاتي</h3>
-            <div id="myProductsList" class="space-y-3">
-                <p class="text-gray-500 text-center py-4">لا توجد منتجات</p>
-            </div>
-        </div>
-
-        <!-- Withdrawal Section -->
-        <div class="bg-white p-6 rounded-2xl shadow">
-            <h3 class="text-xl font-bold mb-4"><i class="fas fa-money-bill-wave ml-2"></i>سحب الفلوس</h3>
-            
-            <div class="bg-amber-50 border-r-4 border-amber-500 p-4 mb-4 rounded">
-                <p class="text-amber-800">
-                    <i class="fas fa-info-circle ml-2"></i>
-                    الحد الأدنى للسحب: <strong>10,000 جنيه</strong>
-                </p>
+        <!-- Tabs -->
+        <div class="bg-white rounded-2xl shadow-lg mb-6">
+            <div class="flex border-b overflow-x-auto scrollbar-hide">
+                <button onclick="switchTab('overview')" id="tab-overview" class="tab-active px-6 py-4 whitespace-nowrap hover:bg-gray-50 transition">
+                    📊 نظرة عامة
+                </button>
+                <button onclick="switchTab('products')" id="tab-products" class="px-6 py-4 text-gray-600 whitespace-nowrap hover:bg-gray-50 transition">
+                    📦 منتجاتي
+                </button>
+                <button onclick="switchTab('withdrawals')" id="tab-withdrawals" class="px-6 py-4 text-gray-600 whitespace-nowrap hover:bg-gray-50 transition">
+                    💸 سجل السحوبات
+                </button>
+                <button onclick="switchTab('bank')" id="tab-bank" class="px-6 py-4 text-gray-600 whitespace-nowrap hover:bg-gray-50 transition">
+                    🏦 حساباتي البنكية
+                </button>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <!-- Tab Content: Overview -->
+            <div id="content-overview" class="p-6 fade-in">
+                <!-- Commission Details -->
+                <div class="bg-gray-50 rounded-xl p-6 mb-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <span>📊</span>
+                        تفاصيل العمولة
+                    </h3>
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-center p-3 bg-white rounded-lg">
+                            <span class="text-gray-600">إجمالي المبيعات</span>
+                            <span class="font-bold text-lg" id="detailTotal">0 ج</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-red-50 rounded-lg text-red-700">
+                            <span>نسبة زولنا (2%)</span>
+                            <span class="font-bold text-lg" id="detailCommission">0 ج</span>
+                        </div>
+                        <div class="flex justify-between items-center p-3 bg-emerald-50 rounded-lg text-emerald-700 border-2 border-emerald-200">
+                            <span class="font-bold">صافي ربحك</span>
+                            <span class="font-bold text-xl" id="detailNet">0 ج</span>
+                        </div>
+                    </div>
+                    
+                    <!-- Progress Bar -->
+                    <div class="mt-4">
+                        <div class="flex justify-between text-sm mb-2">
+                            <span>تقدمك نحو الحد الأدنى للسحب (10,000 ج)</span>
+                            <span id="progressText">0%</span>
+                        </div>
+                        <div class="w-full bg-gray-200 rounded-full h-3">
+                            <div id="progressBar" class="bg-emerald-500 h-3 rounded-full progress-bar" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
                 <div>
-                    <label class="block text-gray-700 mb-2">طريقة السحب</label>
-                    <select id="withdrawMethod" class="w-full px-4 py-2 border rounded-lg">
-                        <option value="bankak">بنكك (Bankak)</option>
-                        <option value="fawry">فوري (Fawry)</option>
-                        <option value="cash">كاش (استلام يد بيد)</option>
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2">
+                        <span>🔔</span>
+                        آخر النشاطات
+                    </h3>
+                    <div id="recentActivity" class="space-y-3">
+                        <p class="text-gray-500 text-center py-4">لا توجد نشاطات حديثة</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Content: Products -->
+            <div id="content-products" class="p-6 hidden fade-in">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">منتجاتي</h3>
+                    <button onclick="window.location.href='index.html'" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-sm hover:bg-emerald-700 transition">
+                        + إضافة منتج
+                    </button>
+                </div>
+                <div id="myProductsList" class="space-y-3">
+                    <p class="text-gray-500 text-center py-8">لا توجد منتجات</p>
+                </div>
+            </div>
+
+            <!-- Tab Content: Withdrawals -->
+            <div id="content-withdrawals" class="p-6 hidden fade-in">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-bold">سجل طلبات السحب</h3>
+                    <button onclick="showWithdrawModal()" class="bg-amber-500 text-white px-4 py-2 rounded-lg text-sm hover:bg-amber-600 transition">
+                        طلب سحب جديد
+                    </button>
+                </div>
+                <div id="withdrawHistory" class="space-y-3">
+                    <p class="text-gray-500 text-center py-8">لا توجد طلبات سحب</p>
+                </div>
+            </div>
+
+            <!-- Tab Content: Bank Accounts -->
+            <div id="content-bank" class="p-6 hidden fade-in">
+                <h3 class="text-lg font-bold mb-4">حساباتي البنكية</h3>
+                
+                <!-- Bank Cards -->
+                <div class="grid md:grid-cols-3 gap-4 mb-6">
+                    <!-- Bankak -->
+                    <div class="bank-card-bankak text-white p-5 rounded-xl shadow-lg cursor-pointer hover:scale-105 transition" onclick="showAddBankModal('bankak')">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-3xl">🏦</span>
+                            <span class="bg-white/20 px-2 py-1 rounded text-xs">+ إضافة</span>
+                        </div>
+                        <h4 class="font-bold text-lg">بنكك</h4>
+                        <p class="text-sm text-white/80">Bankak</p>
+                        <p class="text-xs mt-2 text-white/60" id="bankak-status">غير مربوط</p>
+                    </div>
+
+                    <!-- Fawry -->
+                    <div class="bank-card-fawry text-white p-5 rounded-xl shadow-lg cursor-pointer hover:scale-105 transition" onclick="showAddBankModal('fawry')">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-3xl">💳</span>
+                            <span class="bg-white/20 px-2 py-1 rounded text-xs">+ إضافة</span>
+                        </div>
+                        <h4 class="font-bold text-lg">فوري</h4>
+                        <p class="text-sm text-white/80">Fawry</p>
+                        <p class="text-xs mt-2 text-white/60" id="fawry-status">غير مربوط</p>
+                    </div>
+
+                    <!-- Cash -->
+                    <div class="bank-card-cash text-white p-5 rounded-xl shadow-lg cursor-pointer hover:scale-105 transition" onclick="showAddBankModal('cash')">
+                        <div class="flex justify-between items-start mb-4">
+                            <span class="text-3xl">💵</span>
+                            <span class="bg-white/20 px-2 py-1 rounded text-xs">+ إضافة</span>
+                        </div>
+                        <h4 class="font-bold text-lg">كاش</h4>
+                        <p class="text-sm text-white/80">استلام يد بيد</p>
+                        <p class="text-xs mt-2 text-white/60" id="cash-status">غير مربوط</p>
+                    </div>
+                </div>
+
+                <!-- Saved Accounts -->
+                <div id="savedAccounts" class="space-y-3">
+                    <p class="text-gray-500 text-center py-4">لا توجد حسابات محفوظة</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Withdraw Modal -->
+    <div id="withdrawModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full max-h-[90vh] overflow-y-auto">
+            <div class="gradient-bg text-white p-6 rounded-t-2xl flex justify-between items-center">
+                <h3 class="text-xl font-bold">💸 طلب سحب</h3>
+                <button onclick="closeWithdrawModal()" class="text-white hover:text-gray-200 text-2xl">×</button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <!-- Balance Info -->
+                <div class="bg-amber-50 border-r-4 border-amber-500 p-4 rounded-lg">
+                    <p class="text-amber-800 text-sm">الرصيد المتاح للسحب</p>
+                    <p class="text-2xl font-bold text-amber-600" id="withdrawAvailable">0 ج</p>
+                    <p class="text-xs text-amber-600 mt-1">الحد الأدنى: 10,000 ج</p>
+                </div>
+
+                <!-- Amount -->
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">المبلغ (جنيه)</label>
+                    <input type="number" id="withdrawAmount" min="10000" step="1000"
+                           class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500 text-xl font-bold text-center" 
+                           placeholder="10000">
+                </div>
+
+                <!-- Method -->
+                <div>
+                    <label class="block text-gray-700 font-bold mb-2">طريقة السحب</label>
+                    <select id="withdrawMethod" onchange="updateWithdrawForm()" 
+                            class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500">
+                        <option value="">اختار الطريقة</option>
+                        <option value="bankak">🏦 بنكك (Bankak)</option>
+                        <option value="fawry">💳 فوري (Fawry)</option>
+                        <option value="cash">💵 كاش (استلام يد بيد)</option>
                     </select>
                 </div>
-                <div>
-                    <label class="block text-gray-700 mb-2">رقم الحساب / الهاتف</label>
-                    <input type="text" id="withdrawAccount" class="w-full px-4 py-2 border rounded-lg" placeholder="مثال: 0912345678">
+
+                <!-- Account Details (Dynamic) -->
+                <div id="accountDetails" class="hidden">
+                    <label class="block text-gray-700 font-bold mb-2" id="accountLabel">رقم الحساب</label>
+                    <input type="text" id="withdrawAccount" 
+                           class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" 
+                           placeholder="">
                 </div>
+
+                <!-- Confirm -->
+                <div class="bg-gray-50 p-4 rounded-lg">
+                    <p class="text-sm text-gray-600 mb-2">ملخص الطلب:</p>
+                    <div class="flex justify-between text-sm">
+                        <span>المبلغ:</span>
+                        <span class="font-bold" id="confirmAmount">0 ج</span>
+                    </div>
+                    <div class="flex justify-between text-sm text-red-600">
+                        <span>رسوم التحويل:</span>
+                        <span class="font-bold">0 ج</span>
+                    </div>
+                    <div class="flex justify-between font-bold text-emerald-600 mt-2 pt-2 border-t">
+                        <span>الصافي:</span>
+                        <span id="confirmNet">0 ج</span>
+                    </div>
+                </div>
+
+                <button onclick="submitWithdrawal()" id="submitWithdrawBtn"
+                        class="w-full gradient-bg text-white py-4 rounded-xl font-bold hover:opacity-90 transition disabled:opacity-50 disabled:cursor-not-allowed">
+                    تأكيد طلب السحب
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Bank Modal -->
+    <div id="addBankModal" class="fixed inset-0 bg-black bg-opacity-50 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6">
+            <h3 class="text-xl font-bold mb-4" id="addBankTitle">إضافة حساب</h3>
+            
+            <div id="bankFormFields" class="space-y-4">
+                <!-- Dynamic fields based on bank type -->
             </div>
 
-            <div class="mb-4">
-                <label class="block text-gray-700 mb-2">المبلغ (جنيه)</label>
-                <input type="number" id="withdrawAmount" class="w-full px-4 py-2 border rounded-lg" placeholder="أدخل المبلغ">
-                <p class="text-sm text-gray-500 mt-1">الرصيد المتاح: <span id="availableBalance" class="font-bold text-emerald-600">0</span> ج</p>
-            </div>
-
-            <button onclick="requestWithdrawal()" class="bg-emerald-500 hover:bg-emerald-600 text-white px-8 py-3 rounded-lg font-bold transition w-full md:w-auto">
-                <i class="fas fa-paper-plane ml-2"></i>إرسال طلب السحب
-            </button>
-
-            <!-- Withdrawal History -->
-            <div class="mt-6">
-                <h4 class="font-bold mb-3">سجل طلبات السحب</h4>
-                <div id="withdrawHistory" class="space-y-2">
-                    <p class="text-gray-500 text-sm">لا توجد طلبات سحب</p>
-                </div>
+            <div class="flex gap-3 mt-6">
+                <button onclick="saveBankAccount()" class="flex-1 bg-emerald-600 text-white py-3 rounded-lg font-bold hover:bg-emerald-700 transition">
+                    حفظ
+                </button>
+                <button onclick="closeAddBankModal()" class="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                    إلغاء
+                </button>
             </div>
         </div>
     </div>
@@ -157,163 +419,448 @@
     <script>
         const COMMISSION_RATE = 0.02;
         const MIN_WITHDRAWAL = 10000;
+        
+        let currentUser = null;
+        let userStats = {
+            totalSales: 0,
+            totalCommission: 0,
+            netEarnings: 0,
+            salesCount: 0
+        };
 
-        // Load user data
-        function loadUserData() {
-            const user = localStorage.getItem('zolna_user') || 'زائر';
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAuth();
+        });
+
+        function checkAuth() {
+            const user = localStorage.getItem('zolna_user');
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            currentUser = user;
             document.getElementById('userName').textContent = user;
-            document.getElementById('accountNumber').textContent = 'ZOL-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+            document.getElementById('accountNumber').textContent = 'ZOL-' + Math.random().toString(36).substr(2, 8).toUpperCase();
             
+            loadUserData();
+        }
+
+        function loadUserData() {
             calculateStats();
             loadMyProducts();
             loadWithdrawHistory();
+            loadSavedBanks();
+            loadRecentActivity();
         }
 
-        // Calculate seller stats
         function calculateStats() {
             const products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
-            const myProducts = products.filter(p => p.seller === localStorage.getItem('zolna_user'));
+            const myProducts = products.filter(p => p.seller === currentUser);
             
-            let totalSales = 0;
-            myProducts.forEach(p => {
-                totalSales += p.price;
-            });
-
-            const commission = Math.round(totalSales * COMMISSION_RATE);
-            const netEarnings = totalSales - commission;
+            userStats.totalSales = myProducts.reduce((sum, p) => sum + (p.price || 0), 0);
+            userStats.totalCommission = Math.round(userStats.totalSales * COMMISSION_RATE);
+            userStats.netEarnings = userStats.totalSales - userStats.totalCommission;
+            userStats.salesCount = myProducts.length;
 
             // Update UI
-            document.getElementById('totalSales').textContent = totalSales.toLocaleString() + ' ج';
-            document.getElementById('myEarnings').textContent = netEarnings.toLocaleString() + ' ج';
-            document.getElementById('salesCount').textContent = myProducts.length;
-            document.getElementById('availableBalance').textContent = netEarnings.toLocaleString();
+            document.getElementById('totalSales').textContent = userStats.totalSales.toLocaleString() + ' ج';
+            document.getElementById('myEarnings').textContent = userStats.netEarnings.toLocaleString() + ' ج';
+            document.getElementById('salesCount').textContent = userStats.salesCount;
 
-            // Update details table
-            document.getElementById('detailTotal').textContent = totalSales.toLocaleString() + ' ج';
-            document.getElementById('detailCommission').textContent = commission.toLocaleString() + ' ج';
-            document.getElementById('detailNet').textContent = netEarnings.toLocaleString() + ' ج';
+            // Details
+            document.getElementById('detailTotal').textContent = userStats.totalSales.toLocaleString() + ' ج';
+            document.getElementById('detailCommission').textContent = userStats.totalCommission.toLocaleString() + ' ج';
+            document.getElementById('detailNet').textContent = userStats.netEarnings.toLocaleString() + ' ج';
 
-            return netEarnings;
+            // Progress bar
+            const progress = Math.min((userStats.netEarnings / MIN_WITHDRAWAL) * 100, 100);
+            document.getElementById('progressBar').style.width = progress + '%';
+            document.getElementById('progressText').textContent = Math.round(progress) + '%';
         }
 
-        // Load my products
         function loadMyProducts() {
             const products = JSON.parse(localStorage.getItem('zolna_products') || '[]');
-            const myProducts = products.filter(p => p.seller === localStorage.getItem('zolna_user'));
+            const myProducts = products.filter(p => p.seller === currentUser);
             const list = document.getElementById('myProductsList');
 
             if (myProducts.length === 0) {
-                list.innerHTML = '<p class="text-gray-500 text-center py-4">لا توجد منتجات</p>';
-                return;
-            }
-
-            list.innerHTML = myProducts.map(p => {
-                const net = Math.round(p.price * 0.98);
-                return `
-                    <div class="flex justify-between items-center p-4 border rounded-lg hover:bg-gray-50">
-                        <div>
-                            <h4 class="font-bold">${p.title}</h4>
-                            <p class="text-sm text-gray-500">${p.createdAt}</p>
-                        </div>
-                        <div class="text-left">
-                            <p class="font-bold text-emerald-600">${p.price.toLocaleString()} ج</p>
-                            <p class="text-xs text-gray-500">تحصل: ${net.toLocaleString()} ج</p>
-                        </div>
+                list.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <p class="text-4xl mb-2">📦</p>
+                        <p>لا توجد منتجات</p>
+                        <button onclick="window.location.href='index.html'" class="mt-4 text-emerald-600 hover:underline">أضف منتجك الأول</button>
                     </div>
                 `;
-            }).join('');
+                return;
+            }
+
+            list.innerHTML = myProducts.map(p => `
+                <div class="flex justify-between items-center p-4 border rounded-xl hover:bg-gray-50 transition">
+                    <div class="flex items-center gap-3">
+                        <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-2xl">
+                            ${getCategoryIcon(p.category)}
+                        </div>
+                        <div>
+                            <h4 class="font-bold">${p.title}</h4>
+                            <p class="text-sm text-gray-500">${p.createdAt || 'حديثاً'}</p>
+                        </div>
+                    </div>
+                    <div class="text-left">
+                        <p class="font-bold text-emerald-600">${p.price?.toLocaleString()} ج</p>
+                        <p class="text-xs text-gray-500">صافي: ${(p.netPrice || p.price * 0.98).toLocaleString()} ج</p>
+                    </div>
+                </div>
+            `).join('');
         }
 
-        // Request withdrawal
-        function requestWithdrawal() {
-            const balance = calculateStats();
-            const amount = parseFloat(document.getElementById('withdrawAmount').value);
-            const method = document.getElementById('withdrawMethod').value;
-            const account = document.getElementById('withdrawAccount').value;
-
-            // Validation
-            if (!amount || amount < MIN_WITHDRAWAL) {
-                alert(`الحد الأدنى للسحب هو ${MIN_WITHDRAWAL.toLocaleString()} جنيه`);
-                return;
-            }
-
-            if (amount > balance) {
-                alert('المبلغ أكبر من الرصيد المتاح!');
-                return;
-            }
-
-            if (!account) {
-                alert('يرجى إدخال رقم الحساب');
-                return;
-            }
-
-            // Create withdrawal request
-            const request = {
-                id: Date.now(),
-                amount: amount,
-                method: method,
-                account: account,
-                status: 'pending',
-                date: new Date().toLocaleString('ar-SD'),
-                seller: localStorage.getItem('zolna_user')
-            };
-
-            // Save to history
-            let history = JSON.parse(localStorage.getItem('zolna_withdrawals') || '[]');
-            history.unshift(request);
-            localStorage.setItem('zolna_withdrawals', JSON.stringify(history));
-
-            // Deduct from balance (simulation)
-            let currentBalance = parseFloat(localStorage.getItem('zolna_balance') || '0');
-            localStorage.setItem('zolna_balance', currentBalance - amount);
-
-            alert(`✅ تم إرسال طلب السحب بنجاح!\n\nالمبلغ: ${amount.toLocaleString()} ج\nالطريقة: ${method}\n\nسيتم المراجعة خلال 24 ساعة.`);
-
-            // Clear form
-            document.getElementById('withdrawAmount').value = '';
-            document.getElementById('withdrawAccount').value = '';
-
-            loadWithdrawHistory();
-            calculateStats();
-        }
-
-        // Load withdrawal history
         function loadWithdrawHistory() {
-            const history = JSON.parse(localStorage.getItem('zolna_withdrawals') || '[]');
+            const history = JSON.parse(localStorage.getItem('zolna_withdrawals') || '[]')
+                .filter(w => w.seller === currentUser);
+            
             const container = document.getElementById('withdrawHistory');
 
             if (history.length === 0) {
-                container.innerHTML = '<p class="text-gray-500 text-sm">لا توجد طلبات سحب</p>';
+                container.innerHTML = `
+                    <div class="text-center py-8 text-gray-500">
+                        <p class="text-4xl mb-2">💸</p>
+                        <p>لا توجد طلبات سحب</p>
+                    </div>
+                `;
                 return;
             }
 
             const statusColors = {
-                'pending': 'bg-yellow-100 text-yellow-800',
-                'approved': 'bg-emerald-100 text-emerald-800',
-                'rejected': 'bg-red-100 text-red-800'
+                pending: 'bg-yellow-100 text-yellow-800',
+                approved: 'bg-emerald-100 text-emerald-800',
+                rejected: 'bg-red-100 text-red-800',
+                completed: 'bg-blue-100 text-blue-800'
             };
 
             const statusText = {
-                'pending': 'قيد المراجعة',
-                'approved': 'تم التحويل',
-                'rejected': 'مرفوض'
+                pending: '⏳ قيد المراجعة',
+                approved: '✅ تم الموافقة',
+                rejected: '❌ مرفوض',
+                completed: '💰 تم التحويل'
             };
 
-            container.innerHTML = history.map(h => `
-                <div class="flex justify-between items-center p-3 bg-gray-50 rounded-lg">
+            container.innerHTML = history.map(w => `
+                <div class="flex justify-between items-center p-4 border rounded-xl hover:bg-gray-50 transition">
                     <div>
-                        <p class="font-bold">${h.amount.toLocaleString()} ج</p>
-                        <p class="text-xs text-gray-500">${h.method} - ${h.date}</p>
+                        <p class="font-bold text-lg">${w.amount.toLocaleString()} ج</p>
+                        <p class="text-sm text-gray-500">${getMethodName(w.method)} - ${w.date}</p>
                     </div>
-                    <span class="px-3 py-1 rounded-full text-xs ${statusColors[h.status]}">
-                        ${statusText[h.status]}
+                    <span class="px-3 py-1 rounded-full text-sm ${statusColors[w.status]}">
+                        ${statusText[w.status]}
                     </span>
                 </div>
             `).join('');
         }
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', loadUserData);
+        function loadSavedBanks() {
+            const banks = JSON.parse(localStorage.getItem('zolna_banks') || '[]')
+                .filter(b => b.seller === currentUser);
+            
+            // Update status
+            const hasBankak = banks.some(b => b.type === 'bankak');
+            const hasFawry = banks.some(b => b.type === 'fawry');
+            const hasCash = banks.some(b => b.type === 'cash');
+
+            document.getElementById('bankak-status').textContent = hasBankak ? '✅ مربوط' : 'غير مربوط';
+            document.getElementById('fawry-status').textContent = hasFawry ? '✅ مربوط' : 'غير مربوط';
+            document.getElementById('cash-status').textContent = hasCash ? '✅ مربوط' : 'غير مربوط';
+
+            // Show saved accounts
+            const container = document.getElementById('savedAccounts');
+            if (banks.length === 0) {
+                container.innerHTML = '<p class="text-gray-500 text-center py-4">لا توجد حسابات محفوظة</p>';
+                return;
+            }
+
+            container.innerHTML = banks.map(b => `
+                <div class="flex justify-between items-center p-4 border rounded-xl bg-gray-50">
+                    <div class="flex items-center gap-3">
+                        <span class="text-2xl">${getMethodIcon(b.type)}</span>
+                        <div>
+                            <p class="font-bold">${getMethodName(b.type)}</p>
+                            <p class="text-sm text-gray-500 font-mono">${maskAccount(b.account)}</p>
+                        </div>
+                    </div>
+                    <button onclick="deleteBank('${b.id}')" class="text-red-500 hover:text-red-700">
+                        🗑️
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function loadRecentActivity() {
+            // Simulate activity
+            const activities = [
+                { icon: '💰', text: 'تم بيع منتج: تويوتا كورولا', time: 'منذ ساعة', type: 'sale' },
+                { icon: '👁️', text: '100 مشاهدة جديدة لمنتجاتك', time: 'منذ 3 ساعات', type: 'view' },
+                { icon: '💸', text: 'تم إرسال طلب سحب بقيمة 50,000 ج', time: 'أمس', type: 'withdraw' }
+            ];
+
+            document.getElementById('recentActivity').innerHTML = activities.map(a => `
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                    <span class="text-2xl">${a.icon}</span>
+                    <div class="flex-1">
+                        <p class="text-sm">${a.text}</p>
+                        <p class="text-xs text-gray-500">${a.time}</p>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // Tab Switching
+        function switchTab(tab) {
+            // Hide all contents
+            ['overview', 'products', 'withdrawals', 'bank'].forEach(t => {
+                document.getElementById('content-' + t).classList.add('hidden');
+                document.getElementById('tab-' + t).classList.remove('tab-active');
+                document.getElementById('tab-' + t).classList.add('text-gray-600');
+            });
+
+            // Show selected
+            document.getElementById('content-' + tab).classList.remove('hidden');
+            document.getElementById('tab-' + tab).classList.add('tab-active');
+            document.getElementById('tab-' + tab).classList.remove('text-gray-600');
+        }
+
+        // Withdraw Modal
+        function showWithdrawModal() {
+            if (userStats.netEarnings < MIN_WITHDRAWAL) {
+                alert(`الحد الأدنى للسحب هو ${MIN_WITHDRAWAL.toLocaleString()} جنيه\nرصيدك الحالي: ${userStats.netEarnings.toLocaleString()} جنيه`);
+                return;
+            }
+            
+            document.getElementById('withdrawAvailable').textContent = userStats.netEarnings.toLocaleString() + ' ج';
+            document.getElementById('withdrawModal').classList.remove('hidden');
+        }
+
+        function closeWithdrawModal() {
+            document.getElementById('withdrawModal').classList.add('hidden');
+        }
+
+        function updateWithdrawForm() {
+            const method = document.getElementById('withdrawMethod').value;
+            const detailsDiv = document.getElementById('accountDetails');
+            const label = document.getElementById('accountLabel');
+            const input = document.getElementById('withdrawAccount');
+
+            if (!method) {
+                detailsDiv.classList.add('hidden');
+                return;
+            }
+
+            detailsDiv.classList.remove('hidden');
+            
+            const labels = {
+                bankak: 'رقم حساب بنكك',
+                fawry: 'رقم فوري',
+                cash: 'رقم الهاتف للتواصل'
+            };
+
+            const placeholders = {
+                bankak: 'مثال: 1234567890',
+                fawry: 'مثال: 0912345678',
+                cash: 'مثال: 0912345678'
+            };
+
+            label.textContent = labels[method];
+            input.placeholder = placeholders[method];
+        }
+
+        document.getElementById('withdrawAmount')?.addEventListener('input', updateConfirmAmount);
+
+        function updateConfirmAmount() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value) || 0;
+            document.getElementById('confirmAmount').textContent = amount.toLocaleString() + ' ج';
+            document.getElementById('confirmNet').textContent = amount.toLocaleString() + ' ج';
+        }
+
+        function submitWithdrawal() {
+            const amount = parseFloat(document.getElementById('withdrawAmount').value);
+            const method = document.getElementById('withdrawMethod').value;
+            const account = document.getElementById('withdrawAccount').value;
+
+            if (!amount || amount < MIN_WITHDRAWAL) {
+                alert('المبلغ يجب أن يكون 10,000 جنيه على الأقل');
+                return;
+            }
+
+            if (amount > userStats.netEarnings) {
+                alert('المبلغ أكبر من الرصيد المتاح');
+                return;
+            }
+
+            if (!method || !account) {
+                alert('يرجى ملء جميع الحقول');
+                return;
+            }
+
+            const request = {
+                id: Date.now().toString(),
+                seller: currentUser,
+                amount: amount,
+                method: method,
+                account: account,
+                status: 'pending',
+                date: new Date().toLocaleString('ar-SD'),
+                createdAt: new Date()
+            };
+
+            // Save
+            let withdrawals = JSON.parse(localStorage.getItem('zolna_withdrawals') || '[]');
+            withdrawals.unshift(request);
+            localStorage.setItem('zolna_withdrawals', JSON.stringify(withdrawals));
+
+            // Update balance (deduct)
+            userStats.netEarnings -= amount;
+            
+            closeWithdrawModal();
+            loadWithdrawHistory();
+            calculateStats();
+            
+            alert(`✅ تم إرسال طلب السحب بنجاح!\n\nالمبلغ: ${amount.toLocaleString()} ج\nالطريقة: ${getMethodName(method)}\n\nسيتم المراجعة خلال 24 ساعة.`);
+        }
+
+        // Bank Modal
+        let currentBankType = '';
+
+        function showAddBankModal(type) {
+            currentBankType = type;
+            const titles = {
+                bankak: 'ربط حساب بنكك',
+                fawry: 'ربط حساب فوري',
+                cash: 'إضافة رقم للاستلام بالكاش'
+            };
+
+            document.getElementById('addBankTitle').textContent = titles[type];
+            
+            const fields = {
+                bankak: `
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">الاسم الكامل</label>
+                        <input type="text" id="bankName" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">رقم حساب بنكك</label>
+                        <input type="text" id="bankAccount" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" placeholder="1234567890">
+                    </div>
+                `,
+                fawry: `
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">الاسم الكامل</label>
+                        <input type="text" id="bankName" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">رقم فوري</label>
+                        <input type="text" id="bankAccount" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" placeholder="0912345678">
+                    </div>
+                `,
+                cash: `
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">الاسم الكامل</label>
+                        <input type="text" id="bankName" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">رقم الهاتف</label>
+                        <input type="text" id="bankAccount" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500" placeholder="0912345678">
+                    </div>
+                    <div>
+                        <label class="block text-gray-700 font-bold mb-2">المدينة</label>
+                        <select id="bankCity" class="w-full px-4 py-3 rounded-lg border-2 border-gray-200 outline-none focus:border-emerald-500">
+                            <option>الخرطوم</option>
+                            <option>أم درمان</option>
+                            <option>بحري</option>
+                            <option>مدني</option>
+                            <option>بورتسودان</option>
+                        </select>
+                    </div>
+                `
+            };
+
+            document.getElementById('bankFormFields').innerHTML = fields[type];
+            document.getElementById('addBankModal').classList.remove('hidden');
+        }
+
+        function closeAddBankModal() {
+            document.getElementById('addBankModal').classList.add('hidden');
+        }
+
+        function saveBankAccount() {
+            const name = document.getElementById('bankName')?.value;
+            const account = document.getElementById('bankAccount')?.value;
+
+            if (!name || !account) {
+                alert('يرجى ملء جميع الحقول');
+                return;
+            }
+
+            const bank = {
+                id: Date.now().toString(),
+                seller: currentUser,
+                type: currentBankType,
+                name: name,
+                account: account,
+                city: document.getElementById('bankCity')?.value || 'الخرطوم'
+            };
+
+            let banks = JSON.parse(localStorage.getItem('zolna_banks') || '[]');
+            banks.push(bank);
+            localStorage.setItem('zolna_banks', JSON.stringify(banks));
+
+            closeAddBankModal();
+            loadSavedBanks();
+            alert('✅ تم حفظ الحساب بنجاح!');
+        }
+
+        function deleteBank(id) {
+            if (!confirm('تأكد تبي تحذف الحساب؟')) return;
+            
+            let banks = JSON.parse(localStorage.getItem('zolna_banks') || '[]');
+            banks = banks.filter(b => b.id !== id);
+            localStorage.setItem('zolna_banks', JSON.stringify(banks));
+            
+            loadSavedBanks();
+        }
+
+        // Helpers
+        function getCategoryIcon(cat) {
+            const icons = {
+                cars: '🚗', phones: '📱', electronics: '💻',
+                furniture: '🪑', property: '🏠', jobs: '💼', other: '📦'
+            };
+            return icons[cat] || '📦';
+        }
+
+        function getMethodName(method) {
+            const names = {
+                bankak: 'بنكك', fawry: 'فوري', cash: 'كاش'
+            };
+            return names[method] || method;
+        }
+
+        function getMethodIcon(method) {
+            const icons = {
+                bankak: '🏦', fawry: '💳', cash: '💵'
+            };
+            return icons[method] || '💳';
+        }
+
+        function maskAccount(account) {
+            if (!account) return '';
+            if (account.length < 4) return account;
+            return '****' + account.slice(-4);
+        }
+
+        function logout() {
+            if (confirm('تأكد تبي تسجل خروج؟')) {
+                localStorage.removeItem('zolna_user');
+                window.location.href = 'index.html';
+            }
+        }
     </script>
 
 </body>
